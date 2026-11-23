@@ -99,6 +99,38 @@
   .ia-cons > div { background: #fff; border: 1px solid #f1f5f9; border-radius: 8px; padding: 8px; font-size: 12px; color: #475569; }
   .ia-fin { font-size: 12px; color: #4f46e5; font-style: italic; border-top: 1px solid #c7d2fe; padding-top: 8px; }
   .hide { display: none; }
+  /* Contexto y equivalencias */
+  .ctx-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12px; }
+  .ctx-row .lbl { flex: 0 0 150px; color: #334155; font-weight: 600; }
+  .ctx-row .track { flex: 1; height: 14px; background: #f1f5f9; border-radius: 99px; overflow: hidden; }
+  .ctx-row .track i { display: block; height: 100%; border-radius: 99px; }
+  .ctx-row .val { flex: 0 0 70px; text-align: right; color: #64748b; }
+  .eqs { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+  .eq { flex: 1 1 180px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; font-size: 12px; color: #334155; }
+  .eq strong { display: block; font-size: 16px; color: #0f172a; }
+  .nota-src { font-size: 10px; color: #94a3b8; margin-top: 10px; }
+  /* Escenarios */
+  .scn-head { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+  .meds { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin: 12px 0; }
+  .med { display: flex; gap: 8px; align-items: flex-start; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; background: #fff; cursor: pointer; font-size: 12px; }
+  .med input { margin-top: 2px; width: auto; }
+  .med .t { font-weight: 600; color: #334155; display: block; }
+  .med .d { color: #64748b; }
+  .med.on { border-color: #4f46e5; background: #eef2ff; }
+  .scn-cols { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 12px; }
+  .scn-box { border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; }
+  .scn-box.base { background: #f8fafc; }
+  .scn-box.mej { background: #f0fdf4; border-color: #bbf7d0; }
+  .scn-box .k { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #64748b; }
+  .scn-box .v { font-size: 26px; font-weight: 700; }
+  .scn-box .s { font-size: 12px; color: #64748b; }
+  .dual { margin-bottom: 10px; }
+  .dual .nm { font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+  .dual .b1, .dual .b2 { height: 8px; border-radius: 99px; margin-bottom: 3px; background: #f1f5f9; overflow: hidden; }
+  .dual .b1 i { display: block; height: 100%; background: #94a3b8; }
+  .dual .b2 i { display: block; height: 100%; background: #22c55e; }
+  .rank { font-size: 12px; color: #334155; }
+  .rank li { margin: 4px 0 4px 18px; }
   footer { text-align: center; font-size: 11px; color: #94a3b8; padding: 24px 0 40px; }
 </style>
 </head>
@@ -212,6 +244,13 @@
       </div>
     </div>
 
+    <div class="card">
+      <h3 style="margin-bottom:14px">Tu huella en contexto</h3>
+      <div id="ctx-barras"></div>
+      <div class="eqs" id="ctx-eqs"></div>
+      <p class="nota-src">Referencias orientativas con fines docentes: media España ≈ 5,2 t CO2e/persona/año; media mundial ≈ 4,7 t; objetivo 2030 compatible con 1,5 °C ≈ 2 t. Equivalencias: vuelo ida y vuelta Madrid–Nueva York ≈ 1,6 t; coche de gasolina ≈ 0,22 kg CO2e/km; un árbol absorbe ≈ 22 kg CO2/año.</p>
+    </div>
+
     <h2 style="margin-top:24px">3. Tu asesor personal</h2>
     <p class="sub">Qué está bien, qué deberías revisar y consejos prácticos.</p>
     <div class="card fb" id="feedback-card"></div>
@@ -234,6 +273,18 @@
         <p class="hint">Modelos: gemini-4-hydrogen → gemini-3.1-flash-lite → gemini-3.6-flash → gemini-3.5-flash-lite → gemini-3.8-flash · 2 reintentos por modelo antes de pasar al siguiente</p>
       </div>
       <div id="ia-res" class="ia-res hide"></div>
+    </div>
+
+    <h2 style="margin-top:24px">4. Comparativa de escenarios</h2>
+    <p class="sub">Guarda tu situación actual como escenario base y comprueba cuánto ahorrarías con medidas de mejora (el equivalente a los ESCENARIO A/B de la tarea).</p>
+    <div class="card">
+      <div class="scn-head">
+        <button class="btn pri" onclick="guardarBase()">📌 Guardar escenario base</button>
+        <span class="hint" id="base-info">Aún no has guardado el escenario base.</span>
+      </div>
+      <p class="hint">Marca las medidas que quieres probar en el escenario de mejora:</p>
+      <div class="meds" id="medidas"></div>
+      <div id="scn-resultado"></div>
     </div>
   </div>
 </main>
@@ -301,35 +352,42 @@
     calcular();
   }
 
-  function calcular() {
-    estado.combustibles = [];
-    Array.prototype.forEach.call(document.querySelectorAll('#combustibles-lista select'), function (sel, i) {
-      var inp = document.getElementById('comb-unidad-' + i);
-      if (sel.value && inp) estado.combustibles.push({ tipo: sel.value, unidad: Number(inp.value) || 0 });
-    });
-    var aguaKg = FACTORES.agua * estado.agua;
-    var elecKg = FACTORES.electricidad * estado.electricidad;
+  function calcularDatos(datos) {
+    var aguaKg = FACTORES.agua * datos.agua;
+    var elecKg = FACTORES.electricidad * datos.electricidad;
     var combKg = 0, combTxt = [];
-    estado.combustibles.forEach(function (c) {
+    datos.combustibles.forEach(function (c) {
       var kg = (FACTORES.combustibles[c.tipo] || 0) * c.unidad;
       combKg += kg; combTxt.push(c.tipo + ': ' + c.unidad);
     });
-    var r = estado.residuos;
+    var r = datos.residuos;
     var resKg = FACTORES.residuos.papel * r.papel + FACTORES.residuos.envases * r.envases + FACTORES.residuos.vidrio * r.vidrio + FACTORES.residuos.organico * r.organico + FACTORES.residuos.otros * r.otros;
-    var t = estado.transporte;
+    var t = datos.transporte;
     var trKg = FACTORES.transporte.cocheGasolina * t.privado + FACTORES.transporte.cocheElectrico * t.electrico + FACTORES.transporte.autobus * t.autobus + FACTORES.transporte.tren * t.tren + FACTORES.transporte.avion * t.avion;
     var totalKg = aguaKg + elecKg + combKg + resKg + trKg;
     var totalT = totalKg / FACTORES.kgAToneladas;
     var resTotal = r.papel + r.envases + r.vidrio + r.organico + r.otros;
     var trTotal = t.privado + t.electrico + t.autobus + t.tren + t.avion;
     var cats = [
-      { clave: 'agua', nombre: 'Agua', t: aguaKg / 1000, dato: estado.agua, unidad: 'm3/año' },
-      { clave: 'electricidad', nombre: 'Electricidad', t: elecKg / 1000, dato: estado.electricidad, unidad: 'kWh/año' },
+      { clave: 'agua', nombre: 'Agua', t: aguaKg / 1000, dato: datos.agua, unidad: 'm3/año' },
+      { clave: 'electricidad', nombre: 'Electricidad', t: elecKg / 1000, dato: datos.electricidad, unidad: 'kWh/año' },
       { clave: 'combustibles', nombre: 'Combustibles', t: combKg / 1000, dato: combTxt.length ? combTxt.join('; ') : 0, unidad: '' },
       { clave: 'residuos', nombre: 'Residuos', t: resKg / 1000, dato: resTotal, unidad: 'kg/año' },
       { clave: 'transporte', nombre: 'Transporte', t: trKg / 1000, dato: trTotal, unidad: 'km/año' }
     ];
-    render(totalT, totalKg, cats);
+    return { totalT: totalT, totalKg: totalKg, cats: cats };
+  }
+
+  function calcular() {
+    estado.combustibles = [];
+    Array.prototype.forEach.call(document.querySelectorAll('#combustibles-lista select'), function (sel, i) {
+      var inp = document.getElementById('comb-unidad-' + i);
+      if (sel.value && inp) estado.combustibles.push({ tipo: sel.value, unidad: Number(inp.value) || 0 });
+    });
+    var res = calcularDatos(estado);
+    render(res.totalT, res.totalKg, res.cats);
+    renderContexto(res.totalT, res.totalKg);
+    calcularEscenario();
   }
 
   function pct(c, total) { return (!total || total === 0) ? 0 : (c / total) * 100; }
@@ -420,6 +478,102 @@
       fb.appendChild(div);
     });
   }
+
+  /* ===== Referencias y equivalencias ===== */
+  var REF = { espana: 5.2, mundial: 4.7, objetivo2030: 2.0 };
+  function renderContexto(totalT, totalKg) {
+    var filas = [
+      { lbl: 'Tú', v: totalT, col: '#4f46e5' },
+      { lbl: 'Media España', v: REF.espana, col: '#94a3b8' },
+      { lbl: 'Media mundial', v: REF.mundial, col: '#94a3b8' },
+      { lbl: 'Objetivo 2030 (1,5 °C)', v: REF.objetivo2030, col: '#22c55e' }
+    ];
+    var max = Math.max(8, totalT + 1);
+    var html = '';
+    filas.forEach(function (f) {
+      html += '<div class="ctx-row"><span class="lbl">' + f.lbl + '</span><span class="track"><i style="width:' + Math.min(100, (f.v / max) * 100) + '%;background:' + f.col + '"></i></span><span class="val">' + f.v.toFixed(2) + ' t</span></div>';
+    });
+    document.getElementById('ctx-barras').innerHTML = html;
+    var vuelos = totalT / 1.6, km = totalKg / 0.22, arboles = totalKg / 22;
+    document.getElementById('ctx-eqs').innerHTML =
+      '<div class="eq"><strong>' + vuelos.toFixed(1) + '</strong>vuelos ida y vuelta Madrid–Nueva York</div>' +
+      '<div class="eq"><strong>' + Math.round(km).toLocaleString('es-ES') + '</strong>km en coche de gasolina</div>' +
+      '<div class="eq"><strong>' + Math.round(arboles).toLocaleString('es-ES') + '</strong>árboles absorbiendo CO2 un año</div>';
+  }
+
+  /* ===== Comparativa de escenarios ===== */
+  var MEDIDAS = [
+    { id: 'coche-e', t: 'Cambio a coche eléctrico', d: 'Los km de coche de combustión pasan a eléctrico.', f: function (x) { x.transporte.electrico += x.transporte.privado; x.transporte.privado = 0; } },
+    { id: 'tp-30', t: '30% del coche a transporte público', d: 'Un tercio de los km privados pasan a tren/metro.', f: function (x) { var m = x.transporte.privado * 0.3; x.transporte.privado -= m; x.transporte.tren += m; } },
+    { id: 'vuelos-50', t: 'Reduzco vuelos a la mitad', d: '−50% de km en avión.', f: function (x) { x.transporte.avion *= 0.5; } },
+    { id: 'led', t: 'LED y evitar standby', d: '−15% de electricidad.', f: function (x) { x.electricidad *= 0.85; } },
+    { id: 'calef', t: 'Bajo la calefacción 2 °C', d: '−15% de combustibles del hogar.', f: function (x) { x.combustibles.forEach(function (c) { c.unidad *= 0.85; }); } },
+    { id: 'duchas', t: 'Duchas más cortas', d: '−20% de agua.', f: function (x) { x.agua *= 0.8; } },
+    { id: 'compost', t: 'Composto el orgánico', d: '−75% de huella del residuo orgánico.', f: function (x) { x.residuos.organico *= 0.25; } },
+    { id: 'reciclo', t: 'Reciclo más y compro a granel', d: '−40% de papel, envases, vidrio y otros.', f: function (x) { x.residuos.papel *= 0.6; x.residuos.envases *= 0.6; x.residuos.vidrio *= 0.6; x.residuos.otros *= 0.6; } }
+  ];
+  var baseSnapshot = null;
+  function copiaDatos(d) { return JSON.parse(JSON.stringify(d)); }
+  function guardarBase() {
+    baseSnapshot = copiaDatos(estado);
+    var t = calcularDatos(baseSnapshot).totalT;
+    document.getElementById('base-info').textContent = 'Base guardado a las ' + new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) + ' · ' + t.toFixed(2) + ' t CO2e. Es una foto de tus datos en ese momento.';
+    calcularEscenario();
+  }
+  function medidasActivas() {
+    var ids = [];
+    Array.prototype.forEach.call(document.querySelectorAll('#medidas input'), function (cb) { if (cb.checked) ids.push(cb.value); });
+    return ids;
+  }
+  function aplicar(ids, datos) {
+    var x = copiaDatos(datos);
+    MEDIDAS.forEach(function (m) { if (ids.indexOf(m.id) >= 0) m.f(x); });
+    return x;
+  }
+  function nivelDe(t) { return t <= 2 ? 'Correcto' : t <= 5 ? 'Mejorable' : 'Insuficiente'; }
+  function calcularEscenario() {
+    var cont = document.getElementById('scn-resultado');
+    if (!baseSnapshot) { cont.innerHTML = '<p class="hint">Guarda primero el escenario base para ver la comparativa.</p>'; return; }
+    var ids = medidasActivas();
+    var base = calcularDatos(baseSnapshot);
+    var mej = calcularDatos(aplicar(ids, baseSnapshot));
+    var ahorro = base.totalT - mej.totalT;
+    var pctA = base.totalT > 0 ? (ahorro / base.totalT) * 100 : 0;
+    var html = '<div class="scn-cols">' +
+      '<div class="scn-box base"><p class="k">Escenario base</p><p class="v">' + base.totalT.toFixed(2) + '</p><p class="s">t CO2e/año · Nivel ' + nivelDe(base.totalT) + '</p></div>' +
+      '<div class="scn-box mej"><p class="k">Escenario de mejora</p><p class="v">' + mej.totalT.toFixed(2) + '</p><p class="s">t CO2e/año · Nivel ' + nivelDe(mej.totalT) + '</p></div>' +
+      '<div class="scn-box"><p class="k">Ahorro</p><p class="v" style="color:#15803d">−' + ahorro.toFixed(2) + '</p><p class="s">t CO2e/año (−' + pctA.toFixed(0) + '%) ≈ ' + (ahorro / 1.6).toFixed(1) + ' vuelos MAD–NYC menos</p></div>' +
+      '</div>';
+    if (ids.length === 0) html += '<p class="hint">Marca alguna medida arriba para ver el efecto de cada una.</p>';
+    var maxCat = Math.max.apply(null, base.cats.map(function (c) { return c.t; }).concat(mej.cats.map(function (c) { return c.t; }), [0.001]));
+    html += '<h3 style="margin:10px 0">Por categoría (gris = base, verde = mejora)</h3>';
+    base.cats.forEach(function (c, i) {
+      var m = mej.cats[i];
+      html += '<div class="dual"><p class="nm"><span>' + c.nombre + '</span><span>' + c.t.toFixed(3) + ' → ' + m.t.toFixed(3) + ' t</span></p>' +
+        '<div class="b1"><i style="width:' + (c.t / maxCat) * 100 + '%"></i></div>' +
+        '<div class="b2"><i style="width:' + (m.t / maxCat) * 100 + '%"></i></div></div>';
+    });
+    if (ids.length) {
+      var rank = ids.map(function (id) {
+        var m = MEDIDAS.filter(function (x) { return x.id === id; })[0];
+        var s = base.totalT - calcularDatos(aplicar([id], baseSnapshot)).totalT;
+        return { t: m.t, s: s };
+      }).sort(function (a, b) { return b.s - a.s; });
+      html += '<h3 style="margin:10px 0">Qué medida aporta más ahorro</h3><ol class="rank">' + rank.map(function (r) { return '<li><strong>' + r.t + ':</strong> −' + r.s.toFixed(3) + ' t CO2e/año</li>'; }).join('') + '</ol>';
+    }
+    cont.innerHTML = html;
+  }
+  function marcarMedida(cb) {
+    cb.parentNode.classList.toggle('on', cb.checked);
+    calcularEscenario();
+  }
+  (function () {
+    var html = '';
+    MEDIDAS.forEach(function (m) {
+      html += '<label class="med"><input type="checkbox" value="' + m.id + '" onchange="marcarMedida(this)" /><span><span class="t">' + m.t + '</span><span class="d">' + m.d + '</span></span></label>';
+    });
+    document.getElementById('medidas').innerHTML = html;
+  })();
 
   /* IA opcional (BYOK) con reintentos */
   function toggleIA() { document.getElementById('ia-config').classList.toggle('hide'); }
