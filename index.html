@@ -231,7 +231,7 @@
         <input type="password" id="api-key" placeholder="AIzaSy..." />
         <p class="hint">Consíguela en aistudio.google.com/app/apikey</p>
         <div class="btns"><button class="btn pri" id="btn-ia" onclick="pedirIA()" disabled>Pedir consejo personalizado</button></div>
-        <p class="hint">Modelos: gemini-2.5-flash → gemini-2.5-flash-lite → gemini-2.0-flash</p>
+        <p class="hint">Modelos: gemini-4-hydrogen → gemini-3.1-flash-lite → gemini-3.6-flash → gemini-3.5-flash-lite → gemini-3.8-flash · 2 reintentos por modelo antes de pasar al siguiente</p>
       </div>
       <div id="ia-res" class="ia-res hide"></div>
     </div>
@@ -426,22 +426,30 @@
   document.getElementById('api-key').addEventListener('input', function () {
     document.getElementById('btn-ia').disabled = !this.value;
   });
+  /* Lista de modelos en orden de preferencia y reintentos por modelo */
+  var MODELOS_IA = ['gemini-4-hydrogen', 'gemini-3.1-flash-lite', 'gemini-3.6-flash', 'gemini-3.5-flash-lite', 'gemini-3.8-flash'];
+  var REINTENTOS_POR_MODELO = 2;
+
   function pedirIA() {
     var apiKey = document.getElementById('api-key').value;
     if (!apiKey) return;
     var btn = document.getElementById('btn-ia');
-    btn.disabled = true; btn.textContent = 'Pidiendo consejo…';
-    var modelos = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'];
+    btn.disabled = true;
     var prompt = 'Eres un consejero pedagógico experto en huella de carbono. Responde en español, sin notas numéricas. Explica qué significa el resultado y qué debería revisar el alumno, con consejos concretos. Datos anuales: Agua ' + estado.agua + ' m3; Electricidad ' + estado.electricidad + ' kWh; Combustibles ' + JSON.stringify(estado.combustibles) + '; Residuos kg ' + JSON.stringify(estado.residuos) + '; Transporte km ' + JSON.stringify(estado.transporte) + '. Responde SOLO JSON con claves: resumen, fortalezas (array), areasMejora (array), consejos (array de objetos {apartado, consejo}), mensajeFinal.';
-    function intento(i) {
-      if (i >= modelos.length) {
+
+    /* intento(idx, reintento): prueba el modelo idx; si falla, reintenta hasta
+       REINTENTOS_POR_MODELO veces (con espera creciente) y luego pasa al siguiente modelo. */
+    function intento(idx, reintento) {
+      if (idx >= MODELOS_IA.length) {
         var c = document.getElementById('ia-res');
         c.classList.remove('hide');
-        c.innerHTML = '<p class="res">No se pudo contactar con el asesor IA. Revisa tu API Key o inténtalo más tarde.</p>';
+        c.innerHTML = '<p class="res">No se pudo contactar con el asesor IA tras probar todos los modelos y sus reintentos. Revisa tu API Key o inténtalo más tarde.</p>';
         btn.disabled = false; btn.textContent = 'Pedir consejo personalizado';
         return;
       }
-      fetch('https://generativelanguage.googleapis.com/v1beta/models/' + modelos[i] + ':generateContent?key=' + apiKey, {
+      var modelo = MODELOS_IA[idx];
+      btn.textContent = 'Probando ' + modelo + ' (intento ' + (reintento + 1) + ')…';
+      fetch('https://generativelanguage.googleapis.com/v1beta/models/' + modelo + ':generateContent?key=' + apiKey, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.4, maxOutputTokens: 1536 } })
       }).then(function (resp) {
@@ -452,9 +460,15 @@
         var a = JSON.parse(texto.substring(texto.indexOf('{'), texto.lastIndexOf('}') + 1));
         mostIA(a);
         btn.disabled = false; btn.textContent = 'Pedir consejo personalizado';
-      }).catch(function () { intento(i + 1); });
+      }).catch(function () {
+        if (reintento < REINTENTOS_POR_MODELO) {
+          setTimeout(function () { intento(idx, reintento + 1); }, 700 * (reintento + 1));
+        } else {
+          intento(idx + 1, 0);
+        }
+      });
     }
-    intento(0);
+    intento(0, 0);
   }
   function mostIA(a) {
     var c = document.getElementById('ia-res');
