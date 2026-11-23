@@ -445,7 +445,7 @@
       document.getElementById('nivel-texto').textContent = texto;
       document.getElementById('total-valor').textContent = totalT.toFixed(2);
       document.getElementById('total-grande').textContent = totalT.toFixed(2);
-      document.getElementById('total-kg').textContent = '= ' + totalKg.toFixed(0) + ' kg CO2e';
+      document.getElementById('total-kg').textContent = '= ' + (totalT * FACTORES.kgAToneladas).toFixed(0) + ' kg CO2e';
 
       const canvas = document.getElementById('grafico-donut');
       const ctx = canvas.getContext('2d');
