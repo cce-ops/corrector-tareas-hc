@@ -136,27 +136,42 @@
         <p class="text-xs text-slate-500 mb-4">Peso anual aproximado de cada tipo de residuo que generas.</p>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div class="p-3 rounded-lg border border-slate-200 bg-white">
-            <div class="flex items-center justify-between mb-1"><p class="text-xs font-semibold text-slate-700">Papel</p><button class="info-btn" data-t="Papel" data-e="Bajo: 0-20 | Medio: 20-50 | Alto: +50" data-c="El papel reciclado tiene menor huella.">?</button></div>
+            <div class="flex items-center justify-between mb-1">
+              <p class="text-xs font-semibold text-slate-700">Papel</p>
+              <button class="info-btn" data-t="Papel" data-e="Bajo: 0-20 | Medio: 20-50 | Alto: +50" data-c="El papel reciclado tiene menor huella.">?</button>
+            </div>
             <p class="text-[10px] text-slate-400 mb-2">contenedor azul</p>
             <input type="number" min="0" step="0.1" placeholder="0" id="res-papel" class="input-field" />
           </div>
           <div class="p-3 rounded-lg border border-slate-200 bg-white">
-            <div class="flex items-center justify-between mb-1"><p class="text-xs font-semibold text-slate-700">Envases</p><button class="info-btn" data-t="Envases" data-e="Bajo: 0-15 | Medio: 15-40 | Alto: +40" data-c="Reducir envases de un solo uso baja la huella.">?</button></div>
+            <div class="flex items-center justify-between mb-1">
+              <p class="text-xs font-semibold text-slate-700">Envases</p>
+              <button class="info-btn" data-t="Envases" data-e="Bajo: 0-15 | Medio: 15-40 | Alto: +40" data-c="Reducir envases de un solo uso baja la huella.">?</button>
+            </div>
             <p class="text-[10px] text-slate-400 mb-2">contenedor amarillo</p>
             <input type="number" min="0" step="0.1" placeholder="0" id="res-envases" class="input-field" />
           </div>
           <div class="p-3 rounded-lg border border-slate-200 bg-white">
-            <div class="flex items-center justify-between mb-1"><p class="text-xs font-semibold text-slate-700">Vidrio</p><button class="info-btn" data-t="Vidrio" data-e="Bajo: 0-10 | Medio: 10-30 | Alto: +30" data-c="El vidrio es 100% reciclable.">?</button></div>
+            <div class="flex items-center justify-between mb-1">
+              <p class="text-xs font-semibold text-slate-700">Vidrio</p>
+              <button class="info-btn" data-t="Vidrio" data-e="Bajo: 0-10 | Medio: 10-30 | Alto: +30" data-c="El vidrio es 100% reciclable.">?</button>
+            </div>
             <p class="text-[10px] text-slate-400 mb-2">contenedor verde</p>
             <input type="number" min="0" step="0.1" placeholder="0" id="res-vidrio" class="input-field" />
           </div>
           <div class="p-3 rounded-lg border border-slate-200 bg-white">
-            <div class="flex items-center justify-between mb-1"><p class="text-xs font-semibold text-slate-700">Orgánico</p><button class="info-btn" data-t="Orgánico" data-e="Bajo: 0-50 | Medio: 50-100 | Alto: +100" data-c="El compostaje en casa reduce su huella.">?</button></div>
+            <div class="flex items-center justify-between mb-1">
+              <p class="text-xs font-semibold text-slate-700">Orgánico</p>
+              <button class="info-btn" data-t="Orgánico" data-e="Bajo: 0-50 | Medio: 50-100 | Alto: +100" data-c="El compostaje en casa reduce su huella.">?</button>
+            </div>
             <p class="text-[10px] text-slate-400 mb-2">contenedor marrón</p>
             <input type="number" min="0" step="0.1" placeholder="0" id="res-organico" class="input-field" />
           </div>
           <div class="p-3 rounded-lg border border-slate-200 bg-white">
-            <div class="flex items-center justify-between mb-1"><p class="text-xs font-semibold text-slate-700">Otros</p><button class="info-btn" data-t="Otros" data-e="Bajo: 0-20 | Medio: 20-50 | Alto: +50" data-c="Residuos no reciclables tienen mayor huella.">?</button></div>
+            <div class="flex items-center justify-between mb-1">
+              <p class="text-xs font-semibold text-slate-700">Otros</p>
+              <button class="info-btn" data-t="Otros" data-e="Bajo: 0-20 | Medio: 20-50 | Alto: +50" data-c="Residuos no reciclables tienen mayor huella.">?</button>
+            </div>
             <p class="text-[10px] text-slate-400 mb-2">contenedor gris</p>
             <input type="number" min="0" step="0.1" placeholder="0" id="res-otros" class="input-field" />
           </div>
@@ -171,23 +186,38 @@
         <p class="text-xs text-slate-500 mb-4">Kilómetros recorridos al año por cada medio.</p>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div class="p-3 rounded-lg border border-slate-200 bg-white">
-            <div class="flex items-center justify-between mb-1"><p class="text-xs font-semibold text-slate-700">Coche privado (combustión)</p><button class="info-btn" data-t="Coche combustión" data-e="Bajo: 0-5000 | Medio: 5000-15000 | Alto: +15000" data-c="10.000 km/año en gasolina emiten unas 2,2 t CO2e.">?</button></div>
+            <div class="flex items-center justify-between mb-1">
+              <p class="text-xs font-semibold text-slate-700">Coche privado (combustión)</p>
+              <button class="info-btn" data-t="Coche combustión" data-e="Bajo: 0-5000 | Medio: 5000-15000 | Alto: +15000" data-c="10.000 km/año en gasolina emiten unas 2,2 t CO2e.">?</button>
+            </div>
             <input type="number" min="0" step="1" placeholder="0" id="tr-privado" class="input-field" />
           </div>
           <div class="p-3 rounded-lg border border-slate-200 bg-white">
-            <div class="flex items-center justify-between mb-1"><p class="text-xs font-semibold text-slate-700">Coche privado (eléctrico)</p><button class="info-btn" data-t="Coche eléctrico" data-e="Bajo: 0-5000 | Medio: 5000-15000 | Alto: +15000" data-c="Eléctrico emite unas 5-10 veces menos que gasolina.">?</button></div>
+            <div class="flex items-center justify-between mb-1">
+              <p class="text-xs font-semibold text-slate-700">Coche privado (eléctrico)</p>
+              <button class="info-btn" data-t="Coche eléctrico" data-e="Bajo: 0-5000 | Medio: 5000-15000 | Alto: +15000" data-c="Eléctrico emite unas 5-10 veces menos que gasolina.">?</button>
+            </div>
             <input type="number" min="0" step="1" placeholder="0" id="tr-electrico" class="input-field" />
           </div>
           <div class="p-3 rounded-lg border border-slate-200 bg-white">
-            <div class="flex items-center justify-between mb-1"><p class="text-xs font-semibold text-slate-700">Autobús / barcos</p><button class="info-btn" data-t="Autobús/barcos" data-e="Bajo: 0-2000 | Medio: 2000-6000 | Alto: +6000" data-c="El autobús emite menos por pasajero que el coche privado.">?</button></div>
+            <div class="flex items-center justify-between mb-1">
+              <p class="text-xs font-semibold text-slate-700">Autobús / barcos</p>
+              <button class="info-btn" data-t="Autobús/barcos" data-e="Bajo: 0-2000 | Medio: 2000-6000 | Alto: +6000" data-c="El autobús emite menos por pasajero que el coche privado.">?</button>
+            </div>
             <input type="number" min="0" step="1" placeholder="0" id="tr-autobus" class="input-field" />
           </div>
           <div class="p-3 rounded-lg border border-slate-200 bg-white">
-            <div class="flex items-center justify-between mb-1"><p class="text-xs font-semibold text-slate-700">Tren / metro / tranvía</p><button class="info-btn" data-t="Tren/metro" data-e="Bajo: 0-3000 | Medio: 3000-8000 | Alto: +8000" data-c="El tren es uno de los medios más eficientes.">?</button></div>
+            <div class="flex items-center justify-between mb-1">
+              <p class="text-xs font-semibold text-slate-700">Tren / metro / tranvía</p>
+              <button class="info-btn" data-t="Tren/metro" data-e="Bajo: 0-3000 | Medio: 3000-8000 | Alto: +8000" data-c="El tren es uno de los medios más eficientes.">?</button>
+            </div>
             <input type="number" min="0" step="1" placeholder="0" id="tr-tren" class="input-field" />
           </div>
           <div class="p-3 rounded-lg border border-slate-200 bg-white">
-            <div class="flex items-center justify-between mb-1"><p class="text-xs font-semibold text-slate-700">Avión</p><button class="info-btn" data-t="Avión" data-e="Bajo: 0-1000 | Medio: 1000-5000 | Alto: +5000" data-c="Un vuelo corto-remo (1.500 km) emite unas 0,35 t CO2e por pasajero.">?</button></div>
+            <div class="flex items-center justify-between mb-1">
+              <p class="text-xs font-semibold text-slate-700">Avión</p>
+              <button class="info-btn" data-t="Avión" data-e="Bajo: 0-1000 | Medio: 1000-5000 | Alto: +5000" data-c="Un vuelo corto-remo (1.500 km) emite unas 0,35 t CO2e por pasajero.">?</button>
+            </div>
             <input type="number" min="0" step="1" placeholder="0" id="tr-avion" class="input-field" />
           </div>
         </div>
