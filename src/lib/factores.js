@@ -1,82 +1,64 @@
 /**
- * Factores de emisión por defecto para la actividad de Huella de Carbono.
- * Todas las unidades están en kg CO2e por unidad de actividad.
- * Fuente orientativa: factores tipo del mix español / organismos de clima.
- * El profesor puede editarlos desde la app según la guía de la asignatura.
+ * Factores de emisión orientativos para la calculadora interactiva de alumno.
+ * kg CO2e por unidad de actividad.
+ * Fuente orientativa: factores tipo (mix eléctrico español, organismos de clima).
+ * El profesor puede ajustarlos si su guía de asignatura usa otros valores.
  */
 export const DEFAULT_FACTORES = {
-  // kg CO2e / kWh de electricidad (alcance 2)
-  electricidad: 0.26,
-  // kg CO2e / m3 de agua (suministro + saneamiento, alcance 3)
-  agua: 0.30,
+  electricidad: 0.26,   // kg CO2e / kWh
+  agua: 0.30,           // kg CO2e / m3
 
-  // Combustibles: kg CO2e por unidad indicada
   combustibles: {
     'gas natural': 1.90,   // kg CO2e / m3
-    butano: 1.57,          // kg CO2e / kg (aprox. también por litro licuado)
+    butano: 1.57,          // kg CO2e / kg
     propano: 1.57,         // kg CO2e / kg
     gasoleo: 2.68,         // kg CO2e / L
     gasolina: 2.31,        // kg CO2e / L
   },
 
-  // Residuos: kg CO2e / kg generado (alcance 3, sin crédito por reciclaje)
   residuos: {
-    papel: 0.60,
+    papel: 0.60,   // kg CO2e / kg
     envases: 0.55,
     vidrio: 0.25,
     organico: 0.45,
     otros: 0.75,
   },
 
-  // Transporte: kg CO2e / km recorrido (vehículo promedio, ocupación media)
   transporte: {
-    cocheGasoil: 0.24,   // turismo diésel
-    cocheGasolina: 0.22, // turismo gasolina
-    cocheHibrido: 0.14,  // turismo híbrido
-    cocheElectrico: 0.05, // eléctrico (según mix eléctrico)
+    cocheGasoil: 0.24,   // kg CO2e / km
+    cocheGasolina: 0.22,
+    cocheHibrido: 0.14,
+    cocheElectrico: 0.05,
     moto: 0.11,
     autobus: 0.095,
     tren: 0.055,
     metro: 0.045,
-    avion: 0.235,        // corto/medio radio
+    avion: 0.235,
   },
 
-  // Alternativa cuando el alumno declara litros de combustible (no km)
-  litros: {
-    gasoleo: 2.68,
-    gasolina: 2.31,
-  },
-
-  // Tolerancia relativa aceptada entre lo esperado y lo que escribe el alumno
-  toleranciaRelativa: 0.10, // 10 %
   kgAToneladas: 1000,
 };
 
 /**
- * Convierte un valor en kg CO2e a toneladas CO2e.
+ * Umbrales orientativos (anual, por persona/hogar) para dar feedback cualitativo
+ * sin necesidad de un valor "esperado" predefinido.
  */
-export function kgAToneladas(kg, factores = DEFAULT_FACTORES) {
-  return kg / factores.kgAToneladas;
+export const UMBRALES = {
+  agua: { bajo: 50, medio: 100 },           // m3/año
+  electricidad: { bajo: 1500, medio: 3000 }, // kWh/año
+  residuosTotales: { bajo: 50, medio: 150 }, // kg/año
+  transporteKm: { bajo: 5000, medio: 15000 }, // km/año
+  totalToneladas: { bajo: 2, medio: 5 },     // t CO2e/año
+};
+
+export function kgAToneladas(kg) {
+  return kg / DEFAULT_FACTORES.kgAToneladas;
 }
 
-/**
- * Nombre legible de cada categoría de cálculo.
- */
 export const CATEGORIAS = [
-  { clave: 'agua', nombre: 'Agua', alcanceEsperado: 3 },
-  { clave: 'electricidad', nombre: 'Electricidad', alcanceEsperado: 2 },
-  { clave: 'combustibles', nombre: 'Combustibles', alcanceEsperado: 1 },
-  { clave: 'residuos', nombre: 'Residuos', alcanceEsperado: 3 },
-  { clave: 'transporte', nombre: 'Transporte', alcanceEsperado: 1 },
+  { clave: 'agua', nombre: 'Agua', icono: 'Droplets' },
+  { clave: 'electricidad', nombre: 'Electricidad', icono: 'Zap' },
+  { clave: 'combustibles', nombre: 'Combustibles (hogar)', icono: 'Flame' },
+  { clave: 'residuos', nombre: 'Residuos', icono: 'Trash2' },
+  { clave: 'transporte', nombre: 'Transporte', icono: 'Car' },
 ];
-
-/**
- * Ponderación de cada categoría en la nota (suma 10).
- */
-export const PESOS = {
-  agua: 2,
-  electricidad: 2,
-  combustibles: 2,
-  residuos: 2,
-  transporte: 2,
-};
