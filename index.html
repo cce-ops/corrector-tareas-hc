@@ -21,18 +21,32 @@
     .btn-primary:disabled { background: #c7c3d3; cursor: not-allowed; }
     .btn-outline { border: 1px solid #cbd5e1; color: #475569; border-radius: 0.5rem; padding: 0.6rem 1rem; font-weight: 600; cursor: pointer; background: white; transition: all 0.2s; }
     .btn-outline:hover { background: #f8fafc; }
-    .btn-outline:disabled { color: #94a3b8; border-color: #e2e8f0; cursor: not-allowed; }
-    .progress-bar { height: 1.5rem; background: #e2e8f0; border-radius: 9999px; overflow: hidden; }
-    .progress-fill { height: 100%; transition: width 0.6s ease; }
     .tab-btn { border: 1px solid #e2e8f0; color: #94a3b8; background: white; border-radius: 0.5rem; padding: 0.6rem 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
     .tab-btn:hover { background: #f8fafc; color: #475569; }
     .tab-btn.active { background: #eef2ff; color: #4f46e5; border-color: #4f46e5; }
     .hidden { display: none !important; }
     .fade-in { animation: fadeIn 0.4s ease; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .progress-bar { height: 1.5rem; background: #e2e8f0; border-radius: 9999px; overflow: hidden; }
+    .progress-fill { height: 100%; transition: width 0.6s ease; }
+    .info-btn { width: 1.5rem; height: 1.5rem; border-radius: 50%; border: 1px solid #cbd5e1; background: #f8fafc; color: #64748b; font-size: 0.7rem; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; vertical-align: middle; }
+    .info-btn:hover { background: #e2e8f0; color: #4f46e5; border-color: #4f46e5; }
+    .tooltip { position: fixed; background: #1e293b; color: white; padding: 0.75rem; border-radius: 0.5rem; font-size: 0.85rem; z-index: 50; pointer-events: none; max-width: 320px; line-height: 1.4; opacity: 0; transition: opacity 0.2s; }
+    .tooltip.show { opacity: 1; }
+    .tooltip h4 { margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #fbbf24; }
+    .tooltip ul { margin: 0; padding-left: 1.2rem; }
+    .tooltip li { margin-bottom: 0.3rem; font-size: 0.8rem; color: #cbd5e1; }
+    .tooltip .scale-bar { height: 0.5rem; background: #334155; border-radius: 9999px; margin-top: 0.5rem; overflow: hidden; }
+    .tooltip .scale-seg { height: 100%; float: left; }
+    .tooltip .scale-low { background: #22c55e; width: 33%; }
+    .tooltip .scale-med { background: #eab308; width: 33%; }
+    .tooltip .scale-high { background: #ef4444; width: 34%; }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-900 antialiased min-h-screen">
+
+  <!-- Tooltip escala -->
+  <div id="tooltip" class="tooltip"></div>
 
   <!-- Header -->
   <header class="bg-indigo-600 text-white shadow-sm">
@@ -55,7 +69,7 @@
   <main class="max-w-4xl mx-auto px-4 py-8">
 
     <!-- ========== SECCIÓN 1: DATOS ========== -->
-    <section id="sec-inventario" class="space-y-6">
+    <section id="sec-inventario" class="space-y-6 fade-in">
       <div class="mb-6">
         <h2 class="text-xl font-bold text-slate-900">1. Introduce tus datos anuales</h2>
         <p class="text-slate-600">Rellena los apartados que apliquen a tu hogar. Las emisiones se calculan automáticamente al cambiar cualquier valor.</p>
@@ -68,9 +82,12 @@
             <span class="p-1.5 rounded bg-slate-100 text-slate-600">💧</span>
             <h3 class="font-semibold text-slate-900">Agua</h3>
           </div>
-          <span class="text-xs text-slate-400">m3/año</span>
+          <div class="flex items-center gap-1">
+            <span class="text-xs text-slate-400">m3/año</span>
+            <button class="info-btn" data-titulo="Agua (m3/año)" data-escala="Bajo: 0-50 | Medio: 50-100 | Alto: +100" data-consejo="Una persona consume unos 50 m3/año. Más de 100 m3 es elevado.">?</button>
+          </div>
         </div>
-        <input type="number" id="inp-agua" min="0" step="1" placeholder="m3/año" class="input-field" />
+        <input type="number" id="inp-agua" min="0" step="1" placeholder="0" class="input-field" />
         <p class="text-[11px] text-slate-400 mt-1">Consumo anual de agua en metros cúbicos.</p>
       </div>
 
@@ -81,9 +98,12 @@
             <span class="p-1.5 rounded bg-slate-100 text-slate-600">⚡</span>
             <h3 class="font-semibold text-slate-900">Electricidad</h3>
           </div>
-          <span class="text-xs text-slate-400">kWh/año</span>
+          <div class="flex items-center gap-1">
+            <span class="text-xs text-slate-400">kWh/año</span>
+            <button class="info-btn" data-titulo="Electricidad (kWh/año)" data-escala="Bajo: 0-1500 | Medio: 1500-3000 | Alto: +3000" data-consejo="Un hogar medio consume unos 2.500-3.500 kWh/año. Más de 4.000 es elevado.">?</button>
+          </div>
         </div>
-        <input type="number" id="inp-electricidad" min="0" step="0.1" placeholder="kWh/año" class="input-field" />
+        <input type="number" id="inp-electricidad" min="0" step="0.1" placeholder="0" class="input-field" />
         <p class="text-[11px] text-slate-400 mt-1">Consumo anual de electricidad en kilovatios hora.</p>
       </div>
 
@@ -104,8 +124,8 @@
               <option value="gasoleo">Gasóleo / Diesel</option>
               <option value="gasolina">Gasolina</option>
             </select>
-            <input type="number" min="0" step="0.1" placeholder="Cantidad" class="input-field" id="comb-unidad-0" />
-            <span class="text-xs text-slate-500 text-center">m3 / kg / L</span>
+            <input type="number" min="0" step="0.1" placeholder="0" class="input-field" id="comb-unidad-0" />
+            <span class="text-xs text-slate-500 text-center">m3/kg/L</span>
             <button type="button" class="text-rose-500 hover:text-rose-700" onclick="removeCombustible(0)">×</button>
           </div>
         </div>
@@ -123,29 +143,44 @@
         <p class="text-xs text-slate-500 mb-4">Peso anual aproximado de cada tipo de residuo que generas.</p>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div class="p-3 rounded-lg border border-slate-200 bg-white">
-            <p class="text-xs font-semibold text-slate-700 mb-1">Papel</p>
+            <div class="flex items-center justify-between mb-1">
+              <p class="text-xs font-semibold text-slate-700">Papel</p>
+              <button class="info-btn" data-titulo="Papel (kg/año)" data-escala="Bajo: 0-20 | Medio: 20-50 | Alto: +50" data-consejo="El papel reciclado tiene menor huella.">?</button>
+            </div>
             <p class="text-[10px] text-slate-400 mb-2">contenedor azul</p>
-            <input type="number" min="0" step="0.1" placeholder="kg" id="res-papel" class="input-field" />
+            <input type="number" min="0" step="0.1" placeholder="0" id="res-papel" class="input-field" />
           </div>
           <div class="p-3 rounded-lg border border-slate-200 bg-white">
-            <p class="text-xs font-semibold text-slate-700 mb-1">Envases</p>
+            <div class="flex items-center justify-between mb-1">
+              <p class="text-xs font-semibold text-slate-700">Envases</p>
+              <button class="info-btn" data-titulo="Envases (kg/año)" data-escala="Bajo: 0-15 | Medio: 15-40 | Alto: +40" data-consejo="Reducir envases de un solo uso baja la huella.">?</button>
+            </div>
             <p class="text-[10px] text-slate-400 mb-2">contenedor amarillo</p>
-            <input type="number" min="0" step="0.1" placeholder="kg" id="res-envases" class="input-field" />
+            <input type="number" min="0" step="0.1" placeholder="0" id="res-envases" class="input-field" />
           </div>
           <div class="p-3 rounded-lg border border-slate-200 bg-white">
-            <p class="text-xs font-semibold text-slate-700 mb-1">Vidrio</p>
+            <div class="flex items-center justify-between mb-1">
+              <p class="text-xs font-semibold text-slate-700">Vidrio</p>
+              <button class="info-btn" data-titulo="Vidrio (kg/año)" data-escala="Bajo: 0-10 | Medio: 10-30 | Alto: +30" data-consejo="El vidrio es 100% reciclable.">?</button>
+            </div>
             <p class="text-[10px] text-slate-400 mb-2">contenedor verde</p>
-            <input type="number" min="0" step="0.1" placeholder="kg" id="res-vidrio" class="input-field" />
+            <input type="number" min="0" step="0.1" placeholder="0" id="res-vidrio" class="input-field" />
           </div>
           <div class="p-3 rounded-lg border border-slate-200 bg-white">
-            <p class="text-xs font-semibold text-slate-700 mb-1">Orgánico</p>
+            <div class="flex items-center justify-between mb-1">
+              <p class="text-xs font-semibold text-slate-700">Orgánico</p>
+              <button class="info-btn" data-titulo="Orgánico (kg/año)" data-escala="Bajo: 0-50 | Medio: 50-100 | Alto: +100" data-consejo="El compostaje en casa reduce su huella.">?</button>
+            </div>
             <p class="text-[10px] text-slate-400 mb-2">contenedor marrón</p>
-            <input type="number" min="0" step="0.1" placeholder="kg" id="res-organico" class="input-field" />
+            <input type="number" min="0" step="0.1" placeholder="0" id="res-organico" class="input-field" />
           </div>
           <div class="p-3 rounded-lg border border-slate-200 bg-white">
-            <p class="text-xs font-semibold text-slate-700 mb-1">Otros</p>
+            <div class="flex items-center justify-between mb-1">
+              <p class="text-xs font-semibold text-slate-700">Otros</p>
+              <button class="info-btn" data-titulo="Otros residuos (kg/año)" data-escala="Bajo: 0-20 | Medio: 20-50 | Alto: +50" data-consejo="Residuos no reciclables tienen mayor huella.">?</button>
+            </div>
             <p class="text-[10px] text-slate-400 mb-2">contenedor gris</p>
-            <input type="number" min="0" step="0.1" placeholder="kg" id="res-otros" class="input-field" />
+            <input type="number" min="0" step="0.1" placeholder="0" id="res-otros" class="input-field" />
           </div>
         </div>
       </div>
@@ -159,34 +194,49 @@
         <p class="text-xs text-slate-500 mb-4">Kilómetros recorridos al año por cada medio.</p>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div class="p-3 rounded-lg border border-slate-200 bg-white">
-            <p class="text-xs font-semibold text-slate-700 mb-1">Coche privado (combustión)</p>
-            <input type="number" min="0" step="1" placeholder="km" id="tr-privado" class="input-field" />
+            <div class="flex items-center justify-between mb-1">
+              <p class="text-xs font-semibold text-slate-700">Coche privado (combustión)</p>
+              <button class="info-btn" data-titulo="Coche combustión (km/año)" data-escala="Bajo: 0-5000 | Medio: 5000-15000 | Alto: +15000" data-consejo="10.000 km/año en gasolina emiten unas 2,2 t CO2e.">?</button>
+            </div>
+            <input type="number" min="0" step="1" placeholder="0" id="tr-privado" class="input-field" />
           </div>
           <div class="p-3 rounded-lg border border-slate-200 bg-white">
-            <p class="text-xs font-semibold text-slate-700 mb-1">Coche privado (eléctrico)</p>
-            <input type="number" min="0" step="1" placeholder="km" id="tr-electrico" class="input-field" />
+            <div class="flex items-center justify-between mb-1">
+              <p class="text-xs font-semibold text-slate-700">Coche privado (eléctrico)</p>
+              <button class="info-btn" data-titulo="Coche eléctrico (km/año)" data-escala="Bajo: 0-5000 | Medio: 5000-15000 | Alto: +15000" data-consejo="Eléctrico emite unas 5-10 veces menos que gasolina.">?</button>
+            </div>
+            <input type="number" min="0" step="1" placeholder="0" id="tr-electrico" class="input-field" />
           </div>
           <div class="p-3 rounded-lg border border-slate-200 bg-white">
-            <p class="text-xs font-semibold text-slate-700 mb-1">Autobús / barcos</p>
-            <input type="number" min="0" step="1" placeholder="km" id="tr-autobus" class="input-field" />
+            <div class="flex items-center justify-between mb-1">
+              <p class="text-xs font-semibold text-slate-700">Autobús / barcos</p>
+              <button class="info-btn" data-titulo="Autobús/barcos (km/año)" data-escala="Bajo: 0-2000 | Medio: 2000-6000 | Alto: +6000" data-consejo="El autobús emite menos por pasajero que el coche privado.">?</button>
+            </div>
+            <input type="number" min="0" step="1" placeholder="0" id="tr-autobus" class="input-field" />
           </div>
           <div class="p-3 rounded-lg border border-slate-200 bg-white">
-            <p class="text-xs font-semibold text-slate-700 mb-1">Tren / metro / tranvía</p>
-            <input type="number" min="0" step="1" placeholder="km" id="tr-tren" class="input-field" />
+            <div class="flex items-center justify-between mb-1">
+              <p class="text-xs font-semibold text-slate-700">Tren / metro / tranvía</p>
+              <button class="info-btn" data-titulo="Tren/metro (km/año)" data-escala="Bajo: 0-3000 | Medio: 3000-8000 | Alto: +8000" data-consejo="El tren es uno de los medios más eficientes.">?</button>
+            </div>
+            <input type="number" min="0" step="1" placeholder="0" id="tr-tren" class="input-field" />
           </div>
           <div class="p-3 rounded-lg border border-slate-200 bg-white">
-            <p class="text-xs font-semibold text-slate-700 mb-1">Avión</p>
-            <input type="number" min="0" step="1" placeholder="km" id="tr-avion" class="input-field" />
+            <div class="flex items-center justify-between mb-1">
+              <p class="text-xs font-semibold text-slate-700">Avión</p>
+              <button class="info-btn" data-titulo="Avión (km/año)" data-escala="Bajo: 0-1000 | Medio: 1000-5000 | Alto: +5000" data-consejo="Un vuelo corto-remo (1.500 km) emite unas 0,35 t CO2e por pasajero.">?</button>
+            </div>
+            <input type="number" min="0" step="1" placeholder="0" id="tr-avion" class="input-field" />
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ========== SECCIÓN 2: RESULTADO ========== -->
+    <!-- ========== SECCIÓN 2: RESULTADO (DASHBOARD) ========== -->
     <section id="sec-resultado" class="hidden space-y-6 fade-in">
       <div class="mb-6">
         <h2 class="text-xl font-bold text-slate-900">2. Tu huella de carbono</h2>
-        <p class="text-slate-600">Resultado en tiempo real basado en los datos que has introducido.</p>
+        <p class="text-slate-600">Resultado actualizado en tiempo real según los valores que introduces.</p>
       </div>
 
       <!-- Nivel general -->
@@ -200,7 +250,7 @@
         <p class="text-xs text-slate-500 mt-2">Total anual: <span id="total-valor" class="font-mono font-semibold"></span> t CO2e</p>
       </div>
 
-      <!-- Gráfico y categorías -->
+      <!-- Gráfico donut + categorías -->
       <div class="card">
         <h3 class="font-semibold text-slate-900 mb-4">Distribución de tu huella</h3>
         <div class="flex flex-col md:flex-row items-center gap-8">
@@ -261,10 +311,6 @@
 
       <div id="feedback-card" class="card"></div>
 
-      <!-- IA resultado duplicado aquí también -->
-      <div id="ia-config-feedback" class="hidden"></div>
-      <div id="ia-resultado-feedback" class="hidden"></div>
-
       <div class="flex gap-3 pt-4">
         <button class="btn-outline" onclick="descargarMarkdown()">📄 Descargar resumen (Markdown)</button>
         <button class="btn-primary" onclick="descargarExcel()">📊 Descargar Excel</button>
@@ -276,15 +322,9 @@
   <script>
     /* ---------- Factores de emisión ---------- */
     const FACTORES = {
-      electricidad: 0.26,   // kg CO2e / kWh
-      agua: 0.30,           // kg CO2e / m3
-      combustibles: {
-        'gas natural': 1.90,
-        butano: 1.57,
-        propano: 1.57,
-        gasoleo: 2.68,
-        gasolina: 2.31,
-      },
+      electricidad: 0.26,
+      agua: 0.30,
+      combustibles: { 'gas natural': 1.90, butano: 1.57, propano: 1.57, gasoleo: 2.68, gasolina: 2.31 },
       residuos: { papel: 0.60, envases: 0.55, vidrio: 0.25, organico: 0.45, otros: 0.75 },
       transporte: { cocheGasolina: 0.22, cocheElectrico: 0.05, autobus: 0.095, tren: 0.055, avion: 0.235 },
       kgAToneladas: 1000,
@@ -298,6 +338,25 @@
       transporte: { privado: 0, electrico: 0, autobus: 0, tren: 0, avion: 0 },
     };
 
+    /* ---------- Tooltip escala ---------- */
+    const tooltip = document.getElementById('tooltip');
+    document.querySelectorAll('.info-btn').forEach(btn => {
+      btn.addEventListener('mouseenter', (e) => {
+        tooltip.innerHTML = `
+          <h4>${btn.dataset.titulo}</h4>
+          <p class="text-xs text-slate-300 mb-2">${btn.dataset.escala}</p>
+          <p class="text-xs text-indigo-300 mb-2">${btn.dataset.consejo}</p>
+          <div class="scale-bar"><div class="scale-seg scale-low"></div><div class="scale-seg scale-med"></div><div class="scale-seg scale-high"></div></div>
+          <p class="text-[10px] text-slate-500 mt-1">Bajo · Medio · Alto</div>
+        `;
+        const r = btn.getBoundingClientRect();
+        tooltip.style.left = (r.left + r.width/2 - 160) + 'px';
+        tooltip.style.top = (r.top - 160) + 'px';
+        tooltip.classList.add('show');
+      });
+      btn.addEventListener('mouseleave', () => tooltip.classList.remove('show'));
+    });
+
     /* ---------- Inicialización ---------- */
     document.addEventListener('DOMContentLoaded', () => {
       // Navegación por pestañas
@@ -310,23 +369,25 @@
         });
       });
 
-      // Inputs de datos
-      const inputs = {
-        agua: 'inp-agua', electricidad: 'inp-electricidad',
-        'res-papel': 'papel', 'res-envases': 'envases', 'res-vidrio': 'vidrio',
-        'res-organico': 'organico', 'res-otros': 'otros',
-        'tr-privado': 'privado', 'tr-electrico': 'electrico',
-        'tr-autobus': 'autobus', 'tr-tren': 'tren', 'tr-avion': 'avion',
+      // Inputs simples
+      const mapear = {
+        'inp-agua': v => estado.agua = Number(v) || 0,
+        'inp-electricidad': v => estado.electricidad = Number(v) || 0,
+        'res-papel': v => estado.residuos.papel = Number(v) || 0,
+        'res-envases': v => estado.residuos.envases = Number(v) || 0,
+        'res-vidrio': v => estado.residuos.vidrio = Number(v) || 0,
+        'res-organico': v => estado.residuos.organico = Number(v) || 0,
+        'res-otros': v => estado.residuos.otros = Number(v) || 0,
+        'tr-privado': v => estado.transporte.privado = Number(v) || 0,
+        'tr-electrico': v => estado.transporte.electrico = Number(v) || 0,
+        'tr-autobus': v => estado.transporte.autobus = Number(v) || 0,
+        'tr-tren': v => estado.transporte.tren = Number(v) || 0,
+        'tr-avion': v => estado.transporte.avion = Number(v) || 0,
       };
-      Object.entries(inputs).forEach(([id, clave]) => {
+      Object.entries(mapear).forEach(([id, fn]) => {
         const el = document.getElementById(id);
-        el.addEventListener('input', () => {
-          if (clave === 'agua') estado.agua = Number(el.value) || 0;
-          else if (clave === 'electricidad') estado.electricidad = Number(el.value) || 0;
-          else if (clave.startsWith('res-')) estado.residuos[clave.replace('res-', '')] = Number(el.value) || 0;
-          else if (clave.startsWith('tr-')) estado.transporte[clave.replace('tr-', '')] = Number(el.value) || 0;
-          calcular();
-        });
+        el.addEventListener('input', () => fn(el.value));
+        el.addEventListener('change', calcular);
       });
 
       // Combustibles dinámicos
@@ -344,13 +405,14 @@
             <option value="gasoleo">Gasóleo / Diesel</option>
             <option value="gasolina">Gasolina</option>
           </select>
-          <input type="number" min="0" step="0.1" placeholder="Cantidad" class="input-field" id="comb-unidad-${idx}" />
+          <input type="number" min="0" step="0.1" placeholder="0" class="input-field" id="comb-unidad-${idx}" />
           <span class="text-xs text-slate-500 text-center">m3/kg/L</span>
           ${idx > 0 ? '<button type="button" class="text-rose-500 hover:text-rose-700" onclick="removeCombustible(' + idx + ')">×</button>' : ''}
         `;
         lista.appendChild(div);
-        document.getElementById('comb-tipo-' + idx).addEventListener('change', () => calcular());
-        document.getElementById('comb-unidad-' + idx).addEventListener('input', () => calcular());
+        document.getElementById('comb-tipo-' + idx).addEventListener('change', calcular);
+        document.getElementById('comb-unidad-' + idx).addEventListener('input', calcular);
+        calcular();
       };
       window.removeCombustible = function(idx) {
         document.getElementById('combustibles-lista').removeChild(document.getElementById('combustibles-lista').children[idx]);
@@ -367,14 +429,13 @@
 
     /* ---------- Cálculo ---------- */
     function calcular() {
-      // Recopilar combustibles
+      // Combustibles
       estado.combustibles = [];
       document.querySelectorAll('#combustibles-lista select[id^="comb-tipo-"]').forEach((sel, i) => {
         const inp = document.getElementById('comb-unidad-' + i);
         if (sel.value) estado.combustibles.push({ tipo: sel.value, unidad: Number(inp.value) || 0 });
       });
 
-      // Cálculos
       const aguaKg = FACTORES.agua * estado.agua;
       const elecKg = FACTORES.electricidad * estado.electricidad;
       let combKg = 0;
@@ -451,34 +512,40 @@
         start += sweep;
       });
 
-      // Lista categorías
+      // Lista categorías (dashboard)
       const lista = document.getElementById('categorias-lista');
       lista.innerHTML = '';
       const pct = (c,t)=>(!t||t===0)?0:(c/t)*100;
       cats.forEach((c,i)=>{
         const esCero = c.t===0 || (!c.dato && c.dato!==0);
-        let estadoCat='pendiente', msg='', consejo='';
-        if(esCero){ estadoCat='pendiente'; msg='No has introducido datos en este apartado.'; consejo='Rellénalo si aplica a tu hogar.'; }
+        let estadoCat='pendiente', msg='', consejo='', icono='ℹ️', colorCat='badge-pending';
+        if(esCero){msg='No hay datos en este apartado.';consejo='Rellénalo si aplica.';}
         else {
           const pp=pct(c.t,totalT);
-          if(pp>=40){estadoCat='dominante';msg='Es tu principal fuente de emisiones ('+pp.toFixed(0)+'% del total).';consejo=consejoDom(c.clave);}
-          else if(pp>=15){estadoCat='significativo';msg='Es una fuente notable ('+pp.toFixed(0)+'% del total).';consejo=consejoSig(c.clave);}
-          else if(pp>0){estadoCat='reducido';msg='Tiene una contribución reducida ('+pp.toFixed(0)+'% del total).';consejo='Está bien. Mantén estos hábitos.';}
+          if(pp>=40){estadoCat='dominante';msg='Principal fuente ('+pp.toFixed(0)+'% del total).';consejo=consejoDom(c.clave);icono='⚠️';colorCat='badge-bad';}
+          else if(pp>=15){estadoCat='significativo';msg='Fuente notable ('+pp.toFixed(0)+'% del total).';consejo=consejoSig(c.clave);icono='ℹ️';colorCat='badge-warn';}
+          else if(pp>0){estadoCat='reducido';msg='Contribución reducida ('+pp.toFixed(0)+'% del total).';consejo='Está bien. Mantén estos hábitos.';icono='✅';colorCat='badge-ok';}
         }
         const div = document.createElement('div');
-        div.className = 'flex items-center gap-3';
+        div.className='p-3 rounded border '+(nivel==='Correcto'?'bg-green-50 border-green-200': nivel==='Mejorable'?'bg-amber-50 border-amber-200':'bg-rose-50 border-rose-200');
         div.innerHTML = `
-          <div class="w-8 h-8 rounded flex items-center justify-center text-[10px] font-bold text-white" style="background:${colores[i%colores.length]}">${c.nombre.charAt(0)}</div>
-          <div class="flex-1">
-            <div class="flex justify-between text-xs"><span class="font-medium text-slate-700">${c.nombre}</span><span class="text-slate-500">${c.t.toFixed(3)} t</span></div>
-            <div class="progress-bar"><div class="progress-fill" style="width:${pct(c.t,totalT)}%;background:${colores[i%colores.length]}"></div></div>
-            <p class="text-[11px] text-slate-500 mt-1">${c.dato} ${c.unidad}</p>
+          <div class="flex items-center gap-2 mb-1">
+            <span>${icono}</span>
+            <span class="font-semibold text-slate-900 text-sm">${c.nombre}</span>
+            <span class="ml-auto badge ${colorCat} text-[10px]">${estadoLabel(estadoCat)}</span>
           </div>
+          <div class="flex justify-between text-[11px] mb-1">
+            <span class="text-slate-500">${c.t.toFixed(3)} t CO2e</span>
+            <span class="text-slate-500">${pct(c.t,totalT).toFixed(0)}%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${pct(c.t,totalT)}%;background:${colores[i%colores.length]}"></div></div>
+          <p class="text-[10px] text-slate-500 mt-1">${c.dato} ${c.unidad}</p>
+          ${consejo?`<p class="text-[10px] text-indigo-600 mt-1 font-medium">💡 ${consejo}</p>`:''}
         `;
         lista.appendChild(div);
       });
 
-      // Feedback pedagógico
+      // Feedback pedagógico (sección 3)
       const fb = document.getElementById('feedback-card');
       fb.innerHTML = '<h3 class="font-semibold text-slate-900 mb-3">📋 Análisis por apartado</h3>';
       cats.forEach(c=>{
@@ -490,7 +557,7 @@
         else if(pp>=15){estadoCat='significativo';msg='Es una fuente notable ('+pp.toFixed(0)+'% del total).';consejo=consejoSig(c.clave);icono='ℹ️';colorCat='badge-warn';}
         else if(pp>0){estadoCat='reducido';msg='Contribución reducida ('+pp.toFixed(0)+'% del total).';consejo='Está bien. Mantén estos hábitos.';icono='✅';colorCat='badge-ok';}
         const div = document.createElement('div');
-        div.className='p-4 rounded border '+(nivel==='Correcto'?'bg-green-50 border-green-200': nivel==='Mejorable'?'bg-amber-50 border-amber-200':'bg-rose-50 border-rose-200').replace('bg-green-50','bg-slate-50').replace('border-green-200','border-slate-200');
+        div.className='p-4 rounded border '+(nivel==='Correcto'?'bg-green-50 border-green-200': nivel==='Mejorable'?'bg-amber-50 border-amber-200':'bg-rose-50 border-rose-200');
         div.innerHTML = `
           <div class="flex items-center gap-2 mb-2"><span>${icono}</span><span class="font-semibold text-slate-900">${c.nombre}</span><span class="ml-auto badge ${colorCat}">${estadoLabel(estadoCat)}</span></div>
           <p class="text-sm text-slate-700 mb-2">${msg}</p>
@@ -501,7 +568,6 @@
 
       // Ocultar IA anterior
       document.getElementById('ia-resultado').classList.add('hidden');
-      document.getElementById('ia-resultado-feedback').classList.add('hidden');
     }
 
     function estadoLabel(e){ return e==='dominante'?'Principal':e==='significativo'?'Notable':e==='reducido'?'Reducido':'Sin datos'; }
@@ -509,11 +575,9 @@
     function consejoSig(c){ const o={agua:'Instala reductores de caudal.',electricidad:'Apaga luces al salir.',combustibles:'Calefacción a 19-21 °C.',residuos:'Compra a granel.',transporte:'Combina trayectos y mantén neumáticos inflados.'}; return o[c]||''; }
 
     /* ---------- IA ---------- */
-    let iaVisible = false;
     function toggleIA(){
       const cfg = document.getElementById('ia-config');
-      iaVisible = !iaVisible;
-      cfg.classList.toggle('hidden', !iaVisible);
+      cfg.classList.toggle('hidden');
     }
 
     async function pedirConsejoIA(){
@@ -523,11 +587,6 @@
       btn.disabled = true;
       btn.textContent = 'Pidiendo consejo…';
       try {
-        const datos = JSON.parse(JSON.stringify(estado));
-        const resultado = { totalT: parseFloat(document.getElementById('total-valor').textContent), categorias: [] };
-        // Recalcular categorías para la IA
-        const cats = [];
-        // (simplificado: enviamos lo esencial)
         const modelos = ['gemini-2.5-flash','gemini-2.5-flash-lite','gemini-2.0-flash'];
         let exito = false;
         for(const m of modelos){
@@ -535,7 +594,7 @@
             const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+m+':generateContent?key='+apiKey,{
               method:'POST',headers:{'Content-Type':'application/json'},
               body:JSON.stringify({
-                contents:[{parts:[{text:`Eres un consejero pedagógico experto en huella de carbono. Responde en español, sin notas numéricas. Dime qué significa este resultado y qué debería revisar el alumno. Datos: Agua ${datos.agua}m3, Electricidad ${datos.electricidad}kWh, Combustibles ${JSON.stringify(datos.combustibles)}, Residuos ${JSON.stringify(datos.residuos)}, Transporte ${JSON.stringify(datos.transporte)}. Responde en JSON con claves: resumen, fortalezas (array), areasMejora (array), consejos (array de {apartado, consejo}), mensajeFinal.`}]}],
+                contents:[{parts:[{text:`Eres un consejero pedagógico experto en huella de carbono. Responde en español, sin notas numéricas. Dime qué significa este resultado y qué debería revisar el alumno. Datos: Agua ${estado.agua}m3, Electricidad ${estado.electricidad}kWh, Combustibles ${JSON.stringify(estado.combustibles)}, Residuos ${JSON.stringify(estado.residuos)}, Transporte ${JSON.stringify(estado.transporte)}. Responde en JSON con claves: resumen, fortalezas (array), areasMejora (array), consejos (array de {apartado, consejo}), mensajeFinal.`}]}],
                 generationConfig:{temperature:0.4,maxOutputTokens:1536}
               })
             });
@@ -550,10 +609,9 @@
           } catch(e){ continue; }
         }
         if(!exito){
-          document.getElementById('ia-resultado').classList.remove('hidden');
-          document.getElementById('ia-resultado').innerHTML = '<p class="text-sm text-rose-600">No se pudo contactar con el asesor IA. Intenta más tarde.</p>';
-          document.getElementById('ia-resultado-feedback').classList.remove('hidden');
-          document.getElementById('ia-resultado-feedback').innerHTML = document.getElementById('ia-resultado').innerHTML;
+          const cont = document.getElementById('ia-resultado');
+          cont.classList.remove('hidden');
+          cont.innerHTML = '<p class="text-sm text-rose-600">No se pudo contactar con el asesor IA. Intenta más tarde.</p>';
         }
       } finally {
         btn.disabled = false;
@@ -563,10 +621,9 @@
 
     function mostrarIA(a){
       const cont = document.getElementById('ia-resultado');
-      const contFb = document.getElementById('ia-resultado-feedback');
-      const html = `
+      cont.innerHTML = `
         <h4 class="text-xs font-bold text-indigo-700 uppercase tracking-wider mb-2 flex items-center gap-1">🤖 Consejo del asesor IA</h4>
-        <p class="text-sm text-slate-700 italic mb-4">${a.resumen}</div>
+        <p class="text-sm text-slate-700 italic mb-3">${a.resumen}</p>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
           <div class="p-2 rounded bg-white border border-slate-200"><h5 class="text-xs font-bold text-green-700 mb-1">Fortalezas</h5><ul class="text-xs text-slate-600 list-disc list-inside">${(a.fortalezas||[]).map(f=>'<li>'+f+'</li>').join('')}</ul></div>
           <div class="p-2 rounded bg-white border border-slate-200"><h5 class="text-xs font-bold text-amber-700 mb-1">Mejorar</h5><ul class="text-xs text-slate-600 list-disc list-inside">${(a.areasMejora||[]).map(f=>'<li>'+f+'</li>').join('')}</ul></div>
@@ -574,10 +631,7 @@
         <div class="space-y-2 mb-3"><h5 class="text-xs font-bold text-indigo-700">Consejos prácticos</h5>${(a.consejos||[]).map(c=>`<div class="flex items-start gap-1 p-1 rounded bg-white border border-slate-100"><span class="text-indigo-500 mt-0.5">•</span><span class="text-xs text-slate-600"><span class="font-semibold">${c.apartado}:</span> ${c.consejo}</span></div>`).join('')}</div>
         <p class="pt-2 border-t border-indigo-100 text-xs text-indigo-600 italic">${a.mensajeFinal}</p>
       `;
-      cont.innerHTML = html;
-      contFb.innerHTML = html;
       cont.classList.remove('hidden');
-      contFb.classList.remove('hidden');
     }
 
     /* ---------- Exportación ---------- */
@@ -588,18 +642,17 @@
       md += 'Total anual: '+total.toFixed(2)+' t CO2e\n\n';
       md += '## Por categoría\n';
       document.querySelectorAll('#categorias-lista > div').forEach(d=>{
-        md += '- '+d.querySelector('span.font-medium').textContent+': '+d.querySelector('span.text-slate-500').textContent+'\n';
+        md += '- '+d.querySelector('span.font-medium').textContent+': '+d.querySelectorAll('span.text-slate-500')[0].textContent+'\n';
       });
       const blob = new Blob([md],{type:'text/markdown'});
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href=url; a.download='huella_carbono.md'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
     }
     function descargarExcel(){
-      // CSV simple como fallback de Excel
       const total = parseFloat(document.getElementById('total-valor').textContent);
       let csv = 'Categoría,Emisiones (t CO2e)\n';
       document.querySelectorAll('#categorias-lista > div').forEach(d=>{
-        csv += d.querySelector('span.font-medium').textContent+','+d.querySelector('span.text-slate-500').textContent+'\n';
+        csv += d.querySelector('span.font-medium').textContent+','+d.querySelectorAll('span.text-slate-500')[0].textContent+'\n';
       });
       csv += 'TOTAL,'+total.toFixed(2)+'\n';
       const blob = new Blob([csv],{type:'text/csv'});
