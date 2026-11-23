@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mi Huella de Carbono — Calculadora interactiva</title>
+<style>
+  /* CSS 100% embebido: no depende de ningún CDN externo */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; background: #f8fafc; color: #0f172a; min-height: 100vh; }
+  header { background: #4f46e5; color: #fff; padding: 16px 0; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+  .head-in { display: flex; align-items: center; gap: 12px; }
+  .logo { width: 36px; height: 36px; border-radius: 50%; background: #e0e7ff; color: #4f46e5; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  header h1 { font-size: 18px; font-weight: 700; }
+  header p { font-size: 12px; opacity: .9; }
+  main { padding: 32px 16px; max-width: 960px; margin: 0 auto; }
+  h2 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .sub { color: #475569; font-size: 14px; margin-bottom: 20px; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,.05); padding: 20px; margin-bottom: 16px; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .row-l { display: flex; align-items: center; gap: 8px; }
+  .ico { padding: 6px; border-radius: 8px; background: #f1f5f9; font-size: 14px; }
+  .ico.fire { background: #ffedd5; }
+  .ico.bot { background: #e0e7ff; }
+  h3 { font-size: 15px; font-weight: 600; }
+  .unit { font-size: 12px; color: #94a3b8; }
+  .hint { font-size: 11px; color: #94a3b8; margin-top: 6px; }
+  input[type=number], select, input[type=password] { width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; color: #0f172a; padding: 10px; font-size: 14px; outline: none; }
+  input:focus, select:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,.12); }
+  .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+  .cell { border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; background: #fff; }
+  .cell .row { margin-bottom: 4px; }
+  .cell p.lbl { font-size: 12px; font-weight: 600; color: #334155; }
+  .cell p.cont { font-size: 10px; color: #94a3b8; margin-bottom: 8px; }
+  .comb-row { display: grid; gap: 10px; grid-template-columns: 2fr 1fr auto auto; align-items: center; background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+  @media (max-width: 640px) { .comb-row { grid-template-columns: 1fr 1fr; } }
+  .comb-row span { font-size: 11px; color: #64748b; text-align: center; }
+  .del { background: none; border: none; color: #f43f5e; font-size: 16px; cursor: pointer; }
+  .add { width: 100%; padding: 8px; border: 1px dashed #cbd5e1; border-radius: 8px; background: none; color: #64748b; font-size: 12px; cursor: pointer; }
+  .add:hover { background: #f1f5f9; color: #334155; }
+  .info-btn { width: 22px; height: 22px; border-radius: 50%; border: 1px solid #cbd5e1; background: #f8fafc; color: #64748b; font-size: 11px; font-weight: 700; cursor: pointer; }
+  .info-btn:hover { background: #e2e8f0; color: #4f46e5; border-color: #4f46e5; }
+  #tooltip { position: fixed; background: #1e293b; color: #fff; padding: 12px; border-radius: 8px; font-size: 13px; z-index: 50; pointer-events: none; max-width: 320px; line-height: 1.45; opacity: 0; transition: opacity .15s; }
+  #tooltip.show { opacity: 1; }
+  #tooltip h4 { font-size: 13px; color: #fbbf24; margin-bottom: 6px; }
+  #tooltip .esc { font-size: 12px; color: #cbd5e1; margin-bottom: 6px; }
+  #tooltip .con { font-size: 12px; color: #a5b4fc; margin-bottom: 8px; }
+  .scale-bar { height: 8px; background: #334155; border-radius: 99px; overflow: hidden; display: flex; }
+  .scale-bar i { display: block; height: 100%; }
+  .s-low { background: #22c55e; width: 33%; } .s-med { background: #eab308; width: 33%; } .s-high { background: #ef4444; width: 34%; }
+  #tooltip .leg { font-size: 10px; color: #94a3b8; margin-top: 4px; }
+  /* Dashboard en vivo */
+  #dash { border-top: 3px solid #4f46e5; margin-top: 28px; padding-top: 24px; }
+  .nivel { border-radius: 12px; padding: 18px; margin-bottom: 16px; border: 1px solid; }
+  .nivel.ok { background: #f0fdf4; border-color: #bbf7d0; }
+  .nivel.warn { background: #fffbeb; border-color: #fde68a; }
+  .nivel.bad { background: #fff1f2; border-color: #fecaca; }
+  .nivel .row { margin-bottom: 8px; }
+  .nivel h3 { font-size: 16px; }
+  .nivel p.txt { font-size: 14px; color: #334155; }
+  .nivel p.tot { font-size: 12px; color: #64748b; margin-top: 8px; }
+  .badge { display: inline-block; padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: 600; border: 1px solid; }
+  .b-ok { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
+  .b-warn { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+  .b-bad { background: #fff1f2; color: #9d174d; border-color: #fecaca; }
+  .b-pend { background: #f8fafc; color: #64748b; border-color: #e2e8f0; }
+  .dash-grid { display: flex; gap: 28px; align-items: center; flex-wrap: wrap; }
+  .donut-box { flex: 0 0 280px; margin: 0 auto; }
+  .cats { flex: 1 1 320px; display: flex; flex-direction: column; gap: 10px; }
+  .cat { border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; }
+  .cat .row { margin-bottom: 6px; }
+  .cat .nm { font-size: 13px; font-weight: 600; }
+  .cat .vals { display: flex; justify-content: space-between; font-size: 11px; color: #64748b; margin-bottom: 6px; }
+  .bar { height: 10px; background: #e2e8f0; border-radius: 99px; overflow: hidden; }
+  .bar i { display: block; height: 100%; transition: width .4s; }
+  .cat .dato { font-size: 10px; color: #94a3b8; margin-top: 6px; }
+  .cat .cons { font-size: 11px; color: #4f46e5; font-weight: 500; margin-top: 6px; }
+  .total-card { background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 12px; padding: 18px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+  .total-card .lbl { font-size: 11px; font-weight: 600; color: #4f46e5; text-transform: uppercase; letter-spacing: .05em; }
+  .total-card h2 { font-size: 30px; margin: 0; }
+  .total-card .kg { font-size: 12px; color: #64748b; }
+  .btns { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0; }
+  .btn { padding: 10px 16px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; border: 1px solid #cbd5e1; background: #fff; color: #475569; }
+  .btn:hover { background: #f8fafc; }
+  .btn.pri { background: #4f46e5; border-color: #4f46e5; color: #fff; }
+  .btn.pri:hover { background: #4338ca; }
+  .btn:disabled { background: #c7c3d3; border-color: #c7c3d3; cursor: not-allowed; }
+  .fb .cat { margin-bottom: 10px; }
+  .fb .msg { font-size: 13px; color: #334155; margin: 6px 0; }
+  .ia-res { background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 12px; padding: 18px; margin-top: 14px; }
+  .ia-res h4 { font-size: 11px; font-weight: 700; color: #4338ca; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
+  .ia-res .res { font-size: 14px; color: #334155; font-style: italic; margin-bottom: 12px; }
+  .ia-cols { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 12px; }
+  .ia-cols > div { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; }
+  .ia-cols h5 { font-size: 11px; font-weight: 700; margin-bottom: 6px; }
+  .ia-cols ul { font-size: 12px; color: #475569; padding-left: 18px; }
+  .ia-cons { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+  .ia-cons > div { background: #fff; border: 1px solid #f1f5f9; border-radius: 8px; padding: 8px; font-size: 12px; color: #475569; }
+  .ia-fin { font-size: 12px; color: #4f46e5; font-style: italic; border-top: 1px solid #c7d2fe; padding-top: 8px; }
+  .hide { display: none; }
+  footer { text-align: center; font-size: 11px; color: #94a3b8; padding: 24px 0 40px; }
+</style>
+</head>
+<body>
+<div id="tooltip"></div>
+
+<header>
+  <div class="wrap head-in">
+    <div class="logo">🌍</div>
+    <div>
+      <h1>Mi Huella de Carbono</h1>
+      <p>Calculadora interactiva para alumnado · los resultados se actualizan al escribir</p>
+    </div>
+  </div>
+</header>
+
+<main>
+  <h2>1. Introduce tus datos anuales</h2>
+  <p class="sub">Rellena los apartados que apliquen a tu hogar. El dashboard de abajo se calcula solo, en tiempo real.</p>
+
+  <div class="card">
+    <div class="row">
+      <div class="row-l"><span class="ico">💧</span><h3>Agua</h3></div>
+      <div class="row-l"><span class="unit">m3/año</span><button class="info-btn" data-t="Agua (m3/año)" data-e="Bajo: 0-50 | Medio: 50-100 | Alto: +100" data-c="Una persona consume unos 50 m3/año. Más de 100 m3 es elevado.">?</button></div>
+    </div>
+    <input type="number" id="inp-agua" min="0" step="1" placeholder="0" />
+    <p class="hint">Consumo anual de agua en metros cúbicos.</p>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div class="row-l"><span class="ico">⚡</span><h3>Electricidad</h3></div>
+      <div class="row-l"><span class="unit">kWh/año</span><button class="info-btn" data-t="Electricidad (kWh/año)" data-e="Bajo: 0-1500 | Medio: 1500-3000 | Alto: +3000" data-c="Un hogar medio consume unos 2.500-3.500 kWh/año. Más de 4.000 es elevado.">?</button></div>
+    </div>
+    <input type="number" id="inp-ele" min="0" step="0.1" placeholder="0" />
+    <p class="hint">Consumo anual de electricidad en kilovatios hora.</p>
+  </div>
+
+  <div class="card">
+    <div class="row-l" style="margin-bottom:10px"><span class="ico fire">🔥</span><h3>Combustibles del hogar</h3></div>
+    <p class="hint" style="margin-bottom:12px">Si usas varios tipos, añade una línea por cada uno.</p>
+    <div id="combustibles-lista">
+      <div class="comb-row">
+        <select id="comb-tipo-0">
+          <option value="">Tipo de combustible</option>
+          <option value="gas natural">Gas natural</option>
+          <option value="butano">Butano</option>
+          <option value="propano">Propano</option>
+          <option value="gasoleo">Gasóleo / Diesel</option>
+          <option value="gasolina">Gasolina</option>
+        </select>
+        <input type="number" min="0" step="0.1" placeholder="0" id="comb-unidad-0" />
+        <span>m3/kg/L</span>
+        <button type="button" class="del" onclick="remComb(0)">×</button>
+      </div>
+    </div>
+    <button type="button" class="add" onclick="addComb()">+ Añadir otro combustible</button>
+  </div>
+
+  <div class="card">
+    <div class="row-l" style="margin-bottom:10px"><span class="ico">🗑️</span><h3>Residuos (kg/año)</h3></div>
+    <p class="hint" style="margin-bottom:12px">Peso anual aproximado de cada tipo de residuo que generas.</p>
+    <div class="grid">
+      <div class="cell"><div class="row"><p class="lbl">Papel</p><button class="info-btn" data-t="Papel (kg/año)" data-e="Bajo: 0-20 | Medio: 20-50 | Alto: +50" data-c="El papel reciclado tiene menor huella.">?</button></div><p class="cont">contenedor azul</p><input type="number" min="0" step="0.1" placeholder="0" id="res-papel" /></div>
+      <div class="cell"><div class="row"><p class="lbl">Envases</p><button class="info-btn" data-t="Envases (kg/año)" data-e="Bajo: 0-15 | Medio: 15-40 | Alto: +40" data-c="Reducir envases de un solo uso baja la huella.">?</button></div><p class="cont">contenedor amarillo</p><input type="number" min="0" step="0.1" placeholder="0" id="res-envases" /></div>
+      <div class="cell"><div class="row"><p class="lbl">Vidrio</p><button class="info-btn" data-t="Vidrio (kg/año)" data-e="Bajo: 0-10 | Medio: 10-30 | Alto: +30" data-c="El vidrio es 100% reciclable.">?</button></div><p class="cont">contenedor verde</p><input type="number" min="0" step="0.1" placeholder="0" id="res-vidrio" /></div>
+      <div class="cell"><div class="row"><p class="lbl">Orgánico</p><button class="info-btn" data-t="Orgánico (kg/año)" data-e="Bajo: 0-50 | Medio: 50-100 | Alto: +100" data-c="El compostaje en casa reduce su huella.">?</button></div><p class="cont">contenedor marrón</p><input type="number" min="0" step="0.1" placeholder="0" id="res-organico" /></div>
+      <div class="cell"><div class="row"><p class="lbl">Otros</p><button class="info-btn" data-t="Otros (kg/año)" data-e="Bajo: 0-20 | Medio: 20-50 | Alto: +50" data-c="Residuos no reciclables tienen mayor huella.">?</button></div><p class="cont">contenedor gris</p><input type="number" min="0" step="0.1" placeholder="0" id="res-otros" /></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row-l" style="margin-bottom:10px"><span class="ico">🚗</span><h3>Transporte (km/año)</h3></div>
+    <p class="hint" style="margin-bottom:12px">Kilómetros recorridos al año por cada medio.</p>
+    <div class="grid">
+      <div class="cell"><div class="row"><p class="lbl">Coche privado (combustión)</p><button class="info-btn" data-t="Coche combustión (km/año)" data-e="Bajo: 0-5000 | Medio: 5000-15000 | Alto: +15000" data-c="10.000 km/año en gasolina emiten unas 2,2 t CO2e.">?</button></div><input type="number" min="0" step="1" placeholder="0" id="tr-privado" /></div>
+      <div class="cell"><div class="row"><p class="lbl">Coche privado (eléctrico)</p><button class="info-btn" data-t="Coche eléctrico (km/año)" data-e="Bajo: 0-5000 | Medio: 5000-15000 | Alto: +15000" data-c="Eléctrico emite unas 5-10 veces menos que gasolina.">?</button></div><input type="number" min="0" step="1" placeholder="0" id="tr-electrico" /></div>
+      <div class="cell"><div class="row"><p class="lbl">Autobús / barcos</p><button class="info-btn" data-t="Autobús/barcos (km/año)" data-e="Bajo: 0-2000 | Medio: 2000-6000 | Alto: +6000" data-c="El autobús emite menos por pasajero que el coche privado.">?</button></div><input type="number" min="0" step="1" placeholder="0" id="tr-autobus" /></div>
+      <div class="cell"><div class="row"><p class="lbl">Tren / metro / tranvía</p><button class="info-btn" data-t="Tren/metro (km/año)" data-e="Bajo: 0-3000 | Medio: 3000-8000 | Alto: +8000" data-c="El tren es uno de los medios más eficientes.">?</button></div><input type="number" min="0" step="1" placeholder="0" id="tr-tren" /></div>
+      <div class="cell"><div class="row"><p class="lbl">Avión</p><button class="info-btn" data-t="Avión (km/año)" data-e="Bajo: 0-1000 | Medio: 1000-5000 | Alto: +5000" data-c="Un vuelo de 1.500 km emite unas 0,35 t CO2e por pasajero.">?</button></div><input type="number" min="0" step="1" placeholder="0" id="tr-avion" /></div>
+    </div>
+  </div>
+
+  <!-- ===== DASHBOARD EN VIVO: SIEMPRE VISIBLE, SIN PESTAÑAS ===== -->
+  <div id="dash">
+    <h2>2. Tu huella de carbono (en vivo)</h2>
+    <p class="sub">Se recalcula automáticamente con cada valor que escribes arriba.</p>
+
+    <div class="nivel ok" id="nivel-card">
+      <div class="row">
+        <div class="row-l"><span id="nivel-icono">✅</span><h3 id="nivel-titulo">¡Vaya bien!</h3></div>
+        <span class="badge b-ok" id="nivel-badge">Nivel: Correcto</span>
+      </div>
+      <p class="txt" id="nivel-texto">Tus emisiones están en un rango bajo.</p>
+      <p class="tot">Total anual: <strong id="total-valor">0.00</strong> t CO2e</p>
+    </div>
+
+    <div class="total-card">
+      <div>
+        <p class="lbl">Huella total anual</p>
+        <h2 id="total-grande">0.00</h2>
+      </div>
+      <span class="kg" id="total-kg">= 0 kg CO2e</span>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-bottom:14px">Distribución de tu huella</h3>
+      <div class="dash-grid">
+        <div class="donut-box"><canvas id="grafico-donut" width="280" height="280"></canvas></div>
+        <div class="cats" id="categorias-lista"></div>
+      </div>
+    </div>
+
+    <h2 style="margin-top:24px">3. Tu asesor personal</h2>
+    <p class="sub">Qué está bien, qué deberías revisar y consejos prácticos.</p>
+    <div class="card fb" id="feedback-card"></div>
+
+    <div class="btns">
+      <button class="btn" onclick="descMd()">📄 Descargar resumen (Markdown)</button>
+      <button class="btn pri" onclick="descXls()">📊 Descargar Excel (CSV)</button>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div class="row-l"><span class="ico bot">🤖</span><h3>Asesor pedagógico con IA (opcional)</h3></div>
+        <button class="btn" onclick="toggleIA()">Configurar</button>
+      </div>
+      <div id="ia-config" class="hide">
+        <p class="hint" style="margin-bottom:6px">API Key de Google AI Studio (Gemini). Solo vive en esta pestaña.</p>
+        <input type="password" id="api-key" placeholder="AIzaSy..." />
+        <p class="hint">Consíguela en aistudio.google.com/app/apikey</p>
+        <div class="btns"><button class="btn pri" id="btn-ia" onclick="pedirIA()" disabled>Pedir consejo personalizado</button></div>
+        <p class="hint">Modelos: gemini-2.5-flash → gemini-2.5-flash-lite → gemini-2.0-flash</p>
+      </div>
+      <div id="ia-res" class="ia-res hide"></div>
+    </div>
+  </div>
+</main>
+
+<footer>Calculadora docente de huella de carbono · todo se procesa en tu navegador</footer>
+
+<script>
+  var FACTORES = {
+    electricidad: 0.26, agua: 0.30,
+    combustibles: { 'gas natural': 1.90, butano: 1.57, propano: 1.57, gasoleo: 2.68, gasolina: 2.31 },
+    residuos: { papel: 0.60, envases: 0.55, vidrio: 0.25, organico: 0.45, otros: 0.75 },
+    transporte: { cocheGasolina: 0.22, cocheElectrico: 0.05, autobus: 0.095, tren: 0.055, avion: 0.235 },
+    kgAToneladas: 1000
+  };
+  var COLORES = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+  var estado = { agua: 0, electricidad: 0, combustibles: [], residuos: { papel: 0, envases: 0, vidrio: 0, organico: 0, otros: 0 }, transporte: { privado: 0, electrico: 0, autobus: 0, tren: 0, avion: 0 } };
+
+  /* Tooltips "?" con escala */
+  var tooltip = document.getElementById('tooltip');
+  Array.prototype.forEach.call(document.querySelectorAll('.info-btn'), function (btn) {
+    btn.addEventListener('mouseenter', function () {
+      tooltip.innerHTML = '<h4>' + btn.dataset.t + '</h4><p class="esc">' + btn.dataset.e + '</p><p class="con">' + btn.dataset.c + '</p><div class="scale-bar"><i class="s-low"></i><i class="s-med"></i><i class="s-high"></i></div><p class="leg">Bajo · Medio · Alto</p>';
+      var r = btn.getBoundingClientRect();
+      var left = Math.max(8, Math.min(window.innerWidth - 328, r.left + r.width / 2 - 160));
+      tooltip.style.left = left + 'px';
+      tooltip.style.top = Math.max(8, r.top - 150) + 'px';
+      tooltip.classList.add('show');
+    });
+    btn.addEventListener('mouseleave', function () { tooltip.classList.remove('show'); });
+  });
+
+  /* Enlazar inputs: cada cambio recalcula */
+  var MAP = {
+    'inp-agua': ['agua'], 'inp-ele': ['electricidad'],
+    'res-papel': ['residuos', 'papel'], 'res-envases': ['residuos', 'envases'], 'res-vidrio': ['residuos', 'vidrio'],
+    'res-organico': ['residuos', 'organico'], 'res-otros': ['residuos', 'otros'],
+    'tr-privado': ['transporte', 'privado'], 'tr-electrico': ['transporte', 'electrico'],
+    'tr-autobus': ['transporte', 'autobus'], 'tr-tren': ['transporte', 'tren'], 'tr-avion': ['transporte', 'avion']
+  };
+  Object.keys(MAP).forEach(function (id) {
+    var el = document.getElementById(id);
+    el.addEventListener('input', function () {
+      var path = MAP[id], v = Number(el.value) || 0;
+      if (path.length === 1) estado[path[0]] = v; else estado[path[0]][path[1]] = v;
+      calcular();
+    });
+  });
+
+  function addComb() {
+    var lista = document.getElementById('combustibles-lista');
+    var idx = lista.children.length;
+    var div = document.createElement('div');
+    div.className = 'comb-row';
+    div.innerHTML = '<select id="comb-tipo-' + idx + '"><option value="">Tipo</option><option value="gas natural">Gas natural</option><option value="butano">Butano</option><option value="propano">Propano</option><option value="gasoleo">Gasóleo</option><option value="gasolina">Gasolina</option></select>' +
+      '<input type="number" min="0" step="0.1" placeholder="0" id="comb-unidad-' + idx + '" /><span>m3/kg/L</span>' +
+      (idx > 0 ? '<button type="button" class="del" onclick="remComb(' + idx + ')">×</button>' : '<span></span>');
+    lista.appendChild(div);
+    document.getElementById('comb-tipo-' + idx).addEventListener('change', calcular);
+    document.getElementById('comb-unidad-' + idx).addEventListener('input', calcular);
+    calcular();
+  }
+  function remComb(idx) {
+    var lista = document.getElementById('combustibles-lista');
+    if (lista.children[idx]) lista.removeChild(lista.children[idx]);
+    calcular();
+  }
+
+  function calcular() {
+    estado.combustibles = [];
+    Array.prototype.forEach.call(document.querySelectorAll('#combustibles-lista select'), function (sel, i) {
+      var inp = document.getElementById('comb-unidad-' + i);
+      if (sel.value && inp) estado.combustibles.push({ tipo: sel.value, unidad: Number(inp.value) || 0 });
+    });
+    var aguaKg = FACTORES.agua * estado.agua;
+    var elecKg = FACTORES.electricidad * estado.electricidad;
+    var combKg = 0, combTxt = [];
+    estado.combustibles.forEach(function (c) {
+      var kg = (FACTORES.combustibles[c.tipo] || 0) * c.unidad;
+      combKg += kg; combTxt.push(c.tipo + ': ' + c.unidad);
+    });
+    var r = estado.residuos;
+    var resKg = FACTORES.residuos.papel * r.papel + FACTORES.residuos.envases * r.envases + FACTORES.residuos.vidrio * r.vidrio + FACTORES.residuos.organico * r.organico + FACTORES.residuos.otros * r.otros;
+    var t = estado.transporte;
+    var trKg = FACTORES.transporte.cocheGasolina * t.privado + FACTORES.transporte.cocheElectrico * t.electrico + FACTORES.transporte.autobus * t.autobus + FACTORES.transporte.tren * t.tren + FACTORES.transporte.avion * t.avion;
+    var totalKg = aguaKg + elecKg + combKg + resKg + trKg;
+    var totalT = totalKg / FACTORES.kgAToneladas;
+    var resTotal = r.papel + r.envases + r.vidrio + r.organico + r.otros;
+    var trTotal = t.privado + t.electrico + t.autobus + t.tren + t.avion;
+    var cats = [
+      { clave: 'agua', nombre: 'Agua', t: aguaKg / 1000, dato: estado.agua, unidad: 'm3/año' },
+      { clave: 'electricidad', nombre: 'Electricidad', t: elecKg / 1000, dato: estado.electricidad, unidad: 'kWh/año' },
+      { clave: 'combustibles', nombre: 'Combustibles', t: combKg / 1000, dato: combTxt.length ? combTxt.join('; ') : 0, unidad: '' },
+      { clave: 'residuos', nombre: 'Residuos', t: resKg / 1000, dato: resTotal, unidad: 'kg/año' },
+      { clave: 'transporte', nombre: 'Transporte', t: trKg / 1000, dato: trTotal, unidad: 'km/año' }
+    ];
+    render(totalT, totalKg, cats);
+  }
+
+  function pct(c, total) { return (!total || total === 0) ? 0 : (c / total) * 100; }
+  function lab(e) { return e === 'dominante' ? 'Principal' : e === 'significativo' ? 'Notable' : e === 'reducido' ? 'Reducido' : 'Sin datos'; }
+  function conD(c) { var o = { agua: 'Duchas más cortas y grifos con aireador.', electricidad: 'Cambia a bombillas LED y evita el standby.', combustibles: 'Revisa aislamiento y caldera.', residuos: 'Reduce productos de un solo uso.', transporte: 'Usa bici o transporte público en trayectos cortos.' }; return o[c] || ''; }
+  function conS(c) { var o = { agua: 'Instala reductores de caudal.', electricidad: 'Apaga luces al salir.', combustibles: 'Calefacción a 19-21 °C.', residuos: 'Compra a granel.', transporte: 'Combina trayectos y mantén neumáticos inflados.' }; return o[c] || ''; }
+
+  function render(totalT, totalKg, cats) {
+    var nivel, titulo, texto, cls, badge, ico;
+    if (totalT <= 2) { nivel = 'Correcto'; titulo = '¡Vaya bien!'; texto = 'Tus emisiones están en un rango bajo. Sigue manteniendo estos hábitos sostenibles.'; cls = 'ok'; badge = 'b-ok'; ico = '✅'; }
+    else if (totalT <= 5) { nivel = 'Mejorable'; titulo = 'Hay margen de mejora'; texto = 'Tus emisiones son moderadas. Algunos cambios en los apartados destacados pueden reducir tu huella.'; cls = 'warn'; badge = 'b-warn'; ico = '⚠️'; }
+    else { nivel = 'Insuficiente'; titulo = 'Tu huella es elevada'; texto = 'Tus emisiones están por encima de lo recomendable. Prioriza los apartados marcados como principales y sigue los consejos.'; cls = 'bad'; badge = 'b-bad'; ico = '❌'; }
+
+    document.getElementById('nivel-card').className = 'nivel ' + cls;
+    document.getElementById('nivel-icono').textContent = ico;
+    document.getElementById('nivel-titulo').textContent = titulo;
+    document.getElementById('nivel-badge').className = 'badge ' + badge;
+    document.getElementById('nivel-badge').textContent = 'Nivel: ' + nivel;
+    document.getElementById('nivel-texto').textContent = texto;
+    document.getElementById('total-valor').textContent = totalT.toFixed(2);
+    document.getElementById('total-grande').textContent = totalT.toFixed(2);
+    document.getElementById('total-kg').textContent = '= ' + totalKg.toFixed(0) + ' kg CO2e';
+
+    /* Gráfico donut */
+    var canvas = document.getElementById('grafico-donut');
+    var ctx = canvas.getContext('2d');
+    var w = canvas.width, h = canvas.height, cx = w / 2, cy = h / 2, rOut = 120, rIn = 75;
+    ctx.clearRect(0, 0, w, h);
+    var pos = cats.filter(function (c) { return c.t > 0; });
+    var totalPos = pos.reduce(function (a, c) { return a + c.t; }, 0);
+    if (totalPos === 0) {
+      ctx.beginPath(); ctx.arc(cx, cy, rOut, 0, 2 * Math.PI); ctx.arc(cx, cy, rIn, 0, 2 * Math.PI, true);
+      ctx.fillStyle = '#e2e8f0'; ctx.fill();
+      ctx.fillStyle = '#94a3b8'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('Introduce datos', cx, cy);
+    } else {
+      var start = -Math.PI / 2;
+      pos.forEach(function (c, i) {
+        var sweep = (c.t / totalPos) * 2 * Math.PI;
+        ctx.beginPath();
+        ctx.arc(cx, cy, rOut, start, start + sweep);
+        ctx.arc(cx, cy, rIn, start + sweep, start, true);
+        ctx.closePath();
+        ctx.fillStyle = COLORES[cats.indexOf(c) % COLORES.length];
+        ctx.fill();
+        start += sweep;
+      });
+      ctx.fillStyle = '#0f172a'; ctx.font = 'bold 20px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(totalT.toFixed(2), cx, cy - 2);
+      ctx.fillStyle = '#64748b'; ctx.font = '11px sans-serif';
+      ctx.fillText('t CO2e/año', cx, cy + 16);
+    }
+
+    /* Categorías con barras */
+    var lista = document.getElementById('categorias-lista');
+    lista.innerHTML = '';
+    cats.forEach(function (c, i) {
+      var pp = pct(c.t, totalT);
+      var est, ico2, bcls, cons;
+      if (c.t === 0) { est = 'pendiente'; ico2 = 'ℹ️'; bcls = 'b-pend'; cons = 'Rellénalo si aplica a tu hogar.'; }
+      else if (pp >= 40) { est = 'dominante'; ico2 = '⚠️'; bcls = 'b-bad'; cons = conD(c.clave); }
+      else if (pp >= 15) { est = 'significativo'; ico2 = 'ℹ️'; bcls = 'b-warn'; cons = conS(c.clave); }
+      else { est = 'reducido'; ico2 = '✅'; bcls = 'b-ok'; cons = 'Está bien. Mantén estos hábitos.'; }
+      var div = document.createElement('div');
+      div.className = 'cat';
+      div.innerHTML = '<div class="row"><div class="row-l"><span>' + ico2 + '</span><span class="nm">' + c.nombre + '</span></div><span class="badge ' + bcls + '">' + lab(est) + '</span></div>' +
+        '<div class="vals"><span>' + c.t.toFixed(3) + ' t CO2e</span><span>' + pp.toFixed(0) + '%</span></div>' +
+        '<div class="bar"><i style="width:' + pp + '%;background:' + COLORES[i % COLORES.length] + '"></i></div>' +
+        '<p class="dato">' + c.dato + ' ' + c.unidad + '</p>' +
+        '<p class="cons">💡 ' + cons + '</p>';
+      lista.appendChild(div);
+    });
+
+    /* Consejos (asesor por reglas) */
+    var fb = document.getElementById('feedback-card');
+    fb.innerHTML = '';
+    cats.forEach(function (c) {
+      var pp = pct(c.t, totalT);
+      var msg, cons, ico2, bcls, est;
+      if (c.t === 0) { est = 'pendiente'; msg = 'Sin datos en este apartado.'; cons = 'Rellénalo si aplica a tu hogar para ver tu huella completa.'; ico2 = 'ℹ️'; bcls = 'b-pend'; }
+      else if (pp >= 40) { est = 'dominante'; msg = 'Es tu principal fuente de emisiones (' + pp.toFixed(0) + '% del total).'; cons = conD(c.clave); ico2 = '⚠️'; bcls = 'b-bad'; }
+      else if (pp >= 15) { est = 'significativo'; msg = 'Es una fuente notable (' + pp.toFixed(0) + '% del total).'; cons = conS(c.clave); ico2 = 'ℹ️'; bcls = 'b-warn'; }
+      else { est = 'reducido'; msg = 'Contribución reducida (' + pp.toFixed(0) + '% del total).'; cons = 'Está bien. Mantén estos hábitos.'; ico2 = '✅'; bcls = 'b-ok'; }
+      var div = document.createElement('div');
+      div.className = 'cat';
+      div.innerHTML = '<div class="row"><div class="row-l"><span>' + ico2 + '</span><span class="nm">' + c.nombre + '</span></div><span class="badge ' + bcls + '">' + lab(est) + '</span></div>' +
+        '<p class="msg">' + msg + '</p><p class="cons">💡 ' + cons + '</p>';
+      fb.appendChild(div);
+    });
+  }
+
+  /* IA opcional (BYOK) con reintentos */
+  function toggleIA() { document.getElementById('ia-config').classList.toggle('hide'); }
+  document.getElementById('api-key').addEventListener('input', function () {
+    document.getElementById('btn-ia').disabled = !this.value;
+  });
+  function pedirIA() {
+    var apiKey = document.getElementById('api-key').value;
+    if (!apiKey) return;
+    var btn = document.getElementById('btn-ia');
+    btn.disabled = true; btn.textContent = 'Pidiendo consejo…';
+    var modelos = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'];
+    var prompt = 'Eres un consejero pedagógico experto en huella de carbono. Responde en español, sin notas numéricas. Explica qué significa el resultado y qué debería revisar el alumno, con consejos concretos. Datos anuales: Agua ' + estado.agua + ' m3; Electricidad ' + estado.electricidad + ' kWh; Combustibles ' + JSON.stringify(estado.combustibles) + '; Residuos kg ' + JSON.stringify(estado.residuos) + '; Transporte km ' + JSON.stringify(estado.transporte) + '. Responde SOLO JSON con claves: resumen, fortalezas (array), areasMejora (array), consejos (array de objetos {apartado, consejo}), mensajeFinal.';
+    function intento(i) {
+      if (i >= modelos.length) {
+        var c = document.getElementById('ia-res');
+        c.classList.remove('hide');
+        c.innerHTML = '<p class="res">No se pudo contactar con el asesor IA. Revisa tu API Key o inténtalo más tarde.</p>';
+        btn.disabled = false; btn.textContent = 'Pedir consejo personalizado';
+        return;
+      }
+      fetch('https://generativelanguage.googleapis.com/v1beta/models/' + modelos[i] + ':generateContent?key=' + apiKey, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.4, maxOutputTokens: 1536 } })
+      }).then(function (resp) {
+        if (!resp.ok) throw new Error('http ' + resp.status);
+        return resp.json();
+      }).then(function (data) {
+        var texto = data.candidates[0].content.parts[0].text;
+        var a = JSON.parse(texto.substring(texto.indexOf('{'), texto.lastIndexOf('}') + 1));
+        mostIA(a);
+        btn.disabled = false; btn.textContent = 'Pedir consejo personalizado';
+      }).catch(function () { intento(i + 1); });
+    }
+    intento(0);
+  }
+  function mostIA(a) {
+    var c = document.getElementById('ia-res');
+    var html = '<h4>🤖 Consejo del asesor IA</h4><p class="res">' + (a.resumen || '') + '</p><div class="ia-cols">' +
+      '<div><h5 style="color:#15803d">Fortalezas</h5><ul>' + (a.fortalezas || []).map(function (f) { return '<li>' + f + '</li>'; }).join('') + '</ul></div>' +
+      '<div><h5 style="color:#b45309">Áreas a mejorar</h5><ul>' + (a.areasMejora || []).map(function (f) { return '<li>' + f + '</li>'; }).join('') + '</ul></div></div>' +
+      '<div class="ia-cons">' + (a.consejos || []).map(function (x) { return '<div><strong>' + x.apartado + ':</strong> ' + x.consejo + '</div>'; }).join('') + '</div>' +
+      '<p class="ia-fin">' + (a.mensajeFinal || '') + '</p>';
+    c.innerHTML = html;
+    c.classList.remove('hide');
+  }
+
+  /* Exportar */
+  function filasExport() {
+    var out = [];
+    Array.prototype.forEach.call(document.querySelectorAll('#categorias-lista .cat'), function (d) {
+      out.push([d.querySelector('.nm').textContent, d.querySelector('.vals span').textContent]);
+    });
+    return out;
+  }
+  function descMd() {
+    var total = document.getElementById('total-grande').textContent;
+    var md = '# Mi Huella de Carbono\n\nFecha: ' + new Date().toLocaleDateString('es-ES') + '\nTotal anual: ' + total + ' t CO2e\n\n## Por categoría\n';
+    filasExport().forEach(function (f) { md += '- ' + f[0] + ': ' + f[1] + '\n'; });
+    bajar(md, 'huella_carbono.md', 'text/markdown');
+  }
+  function descXls() {
+    var csv = 'Categoría,Emisiones\n';
+    filasExport().forEach(function (f) { csv += f[0] + ',' + f[1] + '\n'; });
+    csv += 'TOTAL,' + document.getElementById('total-grande').textContent + ' t CO2e\n';
+    bajar(csv, 'huella_carbono.csv', 'text/csv');
+  }
+  function bajar(txt, nombre, tipo) {
+    var blob = new Blob([txt], { type: tipo });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = nombre;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  calcular();
+</script>
+</body>
+</html>
